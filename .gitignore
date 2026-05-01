@@ -25,3 +25,6 @@ dist-ssr
 plan.md
 Capstone Project FSD_ Develop a YouTube Clone Using the MERN Stack.pdf
 frontend/homepagedesign.html
+frontend/videoplayback.html
+frontend/design.md
+frontend/src/data/mockData.js
