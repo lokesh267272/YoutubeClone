@@ -16,6 +16,10 @@ function randomSuffix() {
   return Math.random().toString(36).slice(2, 6);
 }
 
+function isValidUrl(str) {
+  try { return Boolean(new URL(str)); } catch { return false; }
+}
+
 export default function CreateChannelModal({ onClose }) {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
@@ -23,6 +27,8 @@ export default function CreateChannelModal({ onClose }) {
   const [name, setName] = useState(user?.username || '');
   const [handle, setHandle] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
+  const [profileUrl, setProfileUrl] = useState('');
+  const [profileImgError, setProfileImgError] = useState(false);
   const [avatarColor, setAvatarColor] = useState(user?.avatarBg || AVATAR_COLORS[0]);
   const [handleEdited, setHandleEdited] = useState(false);
   const [error, setError] = useState('');
@@ -47,6 +53,13 @@ export default function CreateChannelModal({ onClose }) {
     setError('');
   }
 
+  function handleProfileUrlChange(e) {
+    setProfileUrl(e.target.value);
+    setProfileImgError(false);
+  }
+
+  const showProfileImg = profileUrl.trim() && isValidUrl(profileUrl.trim()) && !profileImgError;
+
   async function handleCreate() {
     const trimmedName = name.trim();
     const trimmedHandle = handle.trim();
@@ -65,6 +78,7 @@ export default function CreateChannelModal({ onClose }) {
         description: '',
         links: [],
         bannerUrl: bannerUrl.trim(),
+        profileUrl: showProfileImg ? profileUrl.trim() : '',
       });
       updateUser({ channelId: channel._id });
       onClose();
@@ -81,6 +95,8 @@ export default function CreateChannelModal({ onClose }) {
     if (e.target === e.currentTarget) onClose();
   }
 
+  const initial = name.trim() ? name.trim()[0].toUpperCase() : '?';
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
@@ -94,7 +110,6 @@ export default function CreateChannelModal({ onClose }) {
           <button
             onClick={onClose}
             className="p-1.5 hover:bg-surface-variant rounded-full transition-colors"
-            aria-label="Close"
           >
             <span className="material-symbols-outlined text-on-surface text-[20px]">close</span>
           </button>
@@ -106,10 +121,17 @@ export default function CreateChannelModal({ onClose }) {
           {/* Avatar preview + color picker */}
           <div className="flex flex-col items-center gap-3">
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md transition-colors duration-200"
+              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md transition-colors duration-200 overflow-hidden"
               style={{ backgroundColor: avatarColor }}
             >
-              {name.trim() ? name.trim()[0].toUpperCase() : '?'}
+              {showProfileImg ? (
+                <img
+                  src={profileUrl.trim()}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  onError={() => setProfileImgError(true)}
+                />
+              ) : initial}
             </div>
 
             <div className="flex items-center gap-2">
@@ -124,7 +146,6 @@ export default function CreateChannelModal({ onClose }) {
                     outline: avatarColor === color ? `2px solid ${color}` : 'none',
                     outlineOffset: '2px',
                   }}
-                  aria-label={`Select color ${color}`}
                 />
               ))}
             </div>
@@ -156,6 +177,22 @@ export default function CreateChannelModal({ onClose }) {
             </div>
 
             <div className="flex flex-col gap-1">
+              <label className="text-body-sm text-secondary">
+                Profile picture URL <span className="text-on-surface-variant">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={profileUrl}
+                onChange={handleProfileUrlChange}
+                className="w-full border border-surface-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface bg-surface-container focus:outline-none focus:border-secondary transition-colors"
+                placeholder="https://example.com/avatar.jpg"
+              />
+              {profileUrl.trim() && !isValidUrl(profileUrl.trim()) && (
+                <p className="text-body-sm text-secondary mt-0.5">Not a valid URL — your initial will be used instead.</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
               <label className="text-body-sm text-secondary">Banner image URL <span className="text-on-surface-variant">(optional)</span></label>
               <input
                 type="url"
@@ -177,13 +214,6 @@ export default function CreateChannelModal({ onClose }) {
 
             {error && <p className="text-body-sm text-error">{error}</p>}
           </div>
-
-          {/* Terms */}
-          <p className="text-body-sm text-secondary text-center leading-relaxed">
-            By clicking Create Channel you agree to YouTube's{' '}
-            <span className="text-primary cursor-pointer hover:underline">Terms of Service</span>.
-            Changes made to your name and profile picture are visible only on YouTube.
-          </p>
         </div>
 
         {/* Footer */}

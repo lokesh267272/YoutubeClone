@@ -23,51 +23,113 @@ export default function VideoModal({ mode, video, onClose, onSave, saving }) {
     onSave(form);
   }
 
-  function field(label, key, opts = {}) {
-    const El = opts.textarea ? "textarea" : "input";
-    return (
-      <div>
-        <label className="text-body-md font-medium text-on-surface block mb-1.5">
-          {label}{opts.required && " *"}
-        </label>
-        <El
-          type={opts.type || "text"}
-          value={form[key]}
-          onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))}
-          placeholder={opts.placeholder || ""}
-          maxLength={opts.maxLength}
-          rows={opts.rows}
-          className={`w-full px-4 py-2.5 rounded-lg text-body-md text-on-surface bg-surface-container border outline-none transition-colors placeholder:text-secondary resize-none ${errors[key] ? "border-error" : "border-surface-variant focus:border-on-surface"}`}
-        />
-        {errors[key] && <p className="text-error text-body-sm mt-1">{errors[key]}</p>}
-      </div>
-    );
+  function set(key, val) {
+    setForm(p => ({ ...p, [key]: val }));
+    if (errors[key]) setErrors(p => ({ ...p, [key]: undefined }));
   }
+
+  const inputBase = "w-full px-4 py-3 rounded-xl text-body-md text-on-surface bg-surface-container border outline-none transition-all placeholder:text-secondary/60";
+  const inputNormal = `${inputBase} border-surface-variant focus:border-primary focus:bg-surface-container-low`;
+  const inputError = `${inputBase} border-error focus:border-error bg-error/5`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant sticky top-0 bg-surface-container-lowest">
+      <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-surface-variant">
           <h2 className="text-title-lg font-title-lg text-on-surface">
             {mode === "upload" ? "Upload Video" : "Edit Video"}
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-surface-variant rounded-full transition-colors">
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined text-secondary">close</span>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          {field("Title", "title", { required: true, placeholder: "Enter video title", maxLength: 100 })}
-          {field("Description", "description", { textarea: true, rows: 3, placeholder: "Describe your video..." })}
-          {field("Thumbnail URL", "thumbnailUrl", { placeholder: "https://..." })}
-          {field("Video URL", "videoUrl", { required: true, placeholder: "https://..." })}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
 
+          {/* Title */}
           <div>
-            <label className="text-body-md font-medium text-on-surface block mb-1.5">Category</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-body-md font-medium text-on-surface">
+                Title <span className="text-error">*</span>
+              </label>
+              <span className={`text-body-sm tabular-nums ${form.title.length > 90 ? "text-error" : "text-secondary"}`}>
+                {form.title.length}/100
+              </span>
+            </div>
+            <input
+              type="text"
+              value={form.title}
+              onChange={e => set("title", e.target.value)}
+              placeholder="Enter video title"
+              maxLength={100}
+              className={errors.title ? inputError : inputNormal}
+            />
+            {errors.title && (
+              <p className="text-error text-body-sm mt-1.5 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">error</span>
+                {errors.title}
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-body-md font-medium text-on-surface">Description</label>
+              <span className="text-body-sm tabular-nums text-secondary">{form.description.length}/500</span>
+            </div>
+            <textarea
+              value={form.description}
+              onChange={e => set("description", e.target.value)}
+              placeholder="Describe your video..."
+              rows={3}
+              maxLength={500}
+              className={`${inputNormal} resize-none`}
+            />
+          </div>
+
+          {/* Thumbnail URL */}
+          <div>
+            <label className="text-body-md font-medium text-on-surface block mb-2">Thumbnail URL</label>
+            <input
+              type="text"
+              value={form.thumbnailUrl}
+              onChange={e => set("thumbnailUrl", e.target.value)}
+              placeholder="https://..."
+              className={inputNormal}
+            />
+          </div>
+
+          {/* Video URL */}
+          <div>
+            <label className="text-body-md font-medium text-on-surface block mb-2">
+              Video URL <span className="text-error">*</span>
+            </label>
+            <input
+              type="text"
+              value={form.videoUrl}
+              onChange={e => set("videoUrl", e.target.value)}
+              placeholder="https://..."
+              className={errors.videoUrl ? inputError : inputNormal}
+            />
+            {errors.videoUrl && (
+              <p className="text-error text-body-sm mt-1.5 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">error</span>
+                {errors.videoUrl}
+              </p>
+            )}
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="text-body-md font-medium text-on-surface block mb-2">Category</label>
             <select
               value={form.category}
-              onChange={(e) => setForm(p => ({ ...p, category: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-lg text-body-md text-on-surface bg-surface-container border border-surface-variant outline-none focus:border-on-surface transition-colors"
+              onChange={e => set("category", e.target.value)}
+              className={`${inputNormal} cursor-pointer`}
             >
               {CATEGORIES.filter(c => c !== "All").map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -75,8 +137,13 @@ export default function VideoModal({ mode, video, onClose, onSave, saving }) {
             </select>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="px-5 py-2.5 hover:bg-surface-variant rounded-full text-body-md font-medium text-on-surface transition-colors">
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-2.5 hover:bg-surface-variant rounded-full text-body-md font-medium text-on-surface transition-colors"
+            >
               Cancel
             </button>
             <button

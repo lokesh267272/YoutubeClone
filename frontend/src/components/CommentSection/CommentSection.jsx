@@ -64,15 +64,11 @@ function CommentItem({ comment, currentUser, onEdit, onDelete }) {
           <button className="flex items-center p-2 hover:bg-surface-variant rounded-full transition-colors">
             <span className="material-symbols-outlined text-[18px] text-on-surface">thumb_down</span>
           </button>
-          <button className="text-label-md font-label-md text-on-surface hover:bg-surface-variant px-3 py-1.5 rounded-full transition-colors ml-1">
-            Reply
-          </button>
-
           {isOwn && (
             <div className="relative ml-1" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(p => !p)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-surface-variant rounded-full transition-all"
+                className="p-1.5 hover:bg-surface-variant rounded-full transition-all"
               >
                 <span className="material-symbols-outlined text-[18px] text-secondary">more_vert</span>
               </button>
