@@ -1,6 +1,19 @@
 # YouTube Clone
 
-A YouTube clone built with the MERN stack (MongoDB, Express, React, Node.js). Users can browse videos, search, filter by category, create a channel, upload videos, like/dislike, and comment.
+A YouTube clone built with the MERN stack (MongoDB, Express, React, Node.js). Users can browse videos, search, filter by category, create a channel, upload videos, like or dislike content, and comment.
+
+---
+
+## Demo Video
+
+[![Watch the project demo](https://img.youtube.com/vi/vzoFl3U-sZI/hqdefault.jpg)](https://youtu.be/vzoFl3U-sZI)
+
+- YouTube demo: `https://youtu.be/vzoFl3U-sZI`
+- Local demo page: [demo-video.html](./demo-video.html)
+
+The local demo page includes:
+- a YouTube embed for sharing online
+- a local MP4 player that looks for `../YouTube Project Demo .mp4`
 
 ---
 
@@ -31,25 +44,27 @@ npm install
 
 Create a `.env` file inside the `backend` folder:
 
-```
+```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string_here
 JWT_SECRET=pick_any_secret_key
 ```
 
-**If you're using local MongoDB (MongoDB Compass), use this as your MONGO_URI:**
-```
+If you're using local MongoDB (MongoDB Compass), use this as your `MONGO_URI`:
+
+```env
 MONGO_URI=mongodb://localhost:27017/youtubeclone
 ```
 
-**If you're using MongoDB Atlas, paste your connection string from the Atlas dashboard:**
-```
+If you're using MongoDB Atlas, paste your connection string from the Atlas dashboard:
+
+```env
 MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/youtubeclone
 ```
 
 Also create a `.env` file inside the `frontend` folder:
 
-```
+```env
 VITE_API_URL=http://localhost:5000/api
 ```
 
@@ -68,13 +83,15 @@ node seed/seedData.js
 
 You'll need two terminals open.
 
-**Terminal 1 – backend:**
+Terminal 1 - backend:
+
 ```bash
 cd backend
 npm run dev
 ```
 
-**Terminal 2 – frontend:**
+Terminal 2 - frontend:
+
 ```bash
 cd frontend
 npm run dev
@@ -96,7 +113,7 @@ Frontend runs at `http://localhost:5173` and the backend at `http://localhost:50
 - Create a channel after logging in
 - Upload, edit, and delete your own videos from your channel page
 - Edit your channel info (name, handle, description, banner, profile pic)
-- Fully responsive — works on mobile, tablet, and desktop
+- Fully responsive and works on mobile, tablet, and desktop
 
 ---
 
@@ -104,67 +121,72 @@ Frontend runs at `http://localhost:5173` and the backend at `http://localhost:50
 
 After running the seed script, you can log in immediately with:
 
-- **Email:** test@example.com  
-- **Password:** password123
+- Email: `test@example.com`
+- Password: `password123`
 
 ---
 
 ## Project Structure
 
-```
+```text
 YoutubeClone/
-├── backend/
-│   ├── config/         mongodb connection
-│   ├── controllers/    auth, video, channel, comment logic
-│   ├── middleware/     JWT auth check
-│   ├── models/         User, Video, Channel, Comment schemas
-│   ├── routes/         all API routes
-│   └── server.js
-│
-├── frontend/
-│   └── src/
-│       ├── api/        axios instance
-│       ├── components/ Header, Sidebar, VideoCard, CommentSection, etc.
-│       ├── context/    AuthContext, SidebarContext
-│       ├── pages/      HomePage, LoginPage, RegisterPage, VideoPlayerPage, ChannelPage
-│       └── data/       categories and helper functions
-│
-└── README.md
+|-- backend/
+|   |-- config/         mongodb connection
+|   |-- controllers/    auth, video, channel, comment logic
+|   |-- middleware/     JWT auth check
+|   |-- models/         User, Video, Channel, Comment schemas
+|   |-- routes/         all API routes
+|   `-- server.js
+|
+|-- frontend/
+|   `-- src/
+|       |-- api/        axios instance
+|       |-- components/ Header, Sidebar, VideoCard, CommentSection, etc.
+|       |-- context/    AuthContext, SidebarContext
+|       |-- pages/      HomePage, LoginPage, RegisterPage, VideoPlayerPage, ChannelPage
+|       `-- data/       categories and helper functions
+|
+|-- demo-video.html
+`-- README.md
 ```
 
 ---
 
 ## API Routes
 
-**Auth** — `/api/auth`
-- `POST /register` — create account
-- `POST /login` — log in, get a token back
-- `GET /me` — get current logged-in user (requires token)
+Auth - `/api/auth`
 
-**Videos** — `/api/videos`
-- `GET /` — get all videos, supports `?search=` and `?category=`
-- `GET /:id` — get a single video (also increments view count)
-- `POST /` — upload a video (auth required)
-- `PUT /:id` — update video (owner only)
-- `DELETE /:id` — delete video (owner only)
-- `PUT /:id/like` — toggle like
-- `PUT /:id/dislike` — toggle dislike
+- `POST /register` - create account
+- `POST /login` - log in and get a token back
+- `GET /me` - get current logged-in user (requires token)
 
-**Channels** — `/api/channels`
-- `POST /` — create a channel (auth required)
-- `GET /:id` — get channel info and its videos
-- `PUT /:id` — update channel (owner only)
+Videos - `/api/videos`
 
-**Comments** — `/api/comments`
-- `GET /:videoId` — get all comments for a video
-- `POST /:videoId` — post a comment (auth required)
-- `PUT /:videoId/:commentId` — edit your comment
-- `DELETE /:videoId/:commentId` — delete your comment
+- `GET /` - get all videos, supports `?search=` and `?category=`
+- `GET /:id` - get a single video (also increments view count)
+- `POST /` - upload a video (auth required)
+- `PUT /:id` - update video (owner only)
+- `DELETE /:id` - delete video (owner only)
+- `PUT /:id/like` - toggle like
+- `PUT /:id/dislike` - toggle dislike
+
+Channels - `/api/channels`
+
+- `POST /` - create a channel (auth required)
+- `GET /:id` - get channel info and its videos
+- `PUT /:id` - update channel (owner only)
+
+Comments - `/api/comments`
+
+- `GET /:videoId` - get all comments for a video
+- `POST /:videoId` - post a comment (auth required)
+- `PUT /:videoId/:commentId` - edit your comment
+- `DELETE /:videoId/:commentId` - delete your comment
 
 ---
 
 ## Tech Stack
 
-- **Frontend:** React 19, React Router v7, Axios, Tailwind CSS, Vite
-- **Backend:** Node.js, Express 5, Mongoose, JWT, bcryptjs
-- **Database:** MongoDB
+- Frontend: React 19, React Router v7, Axios, Tailwind CSS, Vite
+- Backend: Node.js, Express 5, Mongoose, JWT, bcryptjs
+- Database: MongoDB
