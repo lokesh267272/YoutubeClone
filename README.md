@@ -37,13 +37,23 @@ MONGO_URI=your_mongodb_connection_string_here
 JWT_SECRET=pick_any_secret_key
 ```
 
-The frontend already has a `.env` file with:
+**If you're using local MongoDB (MongoDB Compass), use this as your MONGO_URI:**
+```
+MONGO_URI=mongodb://localhost:27017/youtubeclone
+```
+
+**If you're using MongoDB Atlas, paste your connection string from the Atlas dashboard:**
+```
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/youtubeclone
+```
+
+Also create a `.env` file inside the `frontend` folder:
 
 ```
 VITE_API_URL=http://localhost:5000/api
 ```
 
-If your backend runs on a different port, update that too.
+If your backend runs on a different port, update that value too.
 
 ### 4. Seed the database (optional but recommended)
 
@@ -92,7 +102,7 @@ Frontend runs at `http://localhost:5173` and the backend at `http://localhost:50
 
 ## Demo Account
 
-If you want to test without registering:
+After running the seed script, you can log in immediately with:
 
 - **Email:** test@example.com  
 - **Password:** password123
