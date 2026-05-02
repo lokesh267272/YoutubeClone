@@ -6,6 +6,7 @@ const channelSchema = new mongoose.Schema(
     handle:      { type: String, required: true, unique: true },
     description: { type: String, default: '' },
     bannerUrl:   { type: String, default: '' },
+    profileUrl:  { type: String, default: '' },
     avatarBg:    { type: String, default: '#4d96ff' },
     initial:     { type: String, default: '' },
     links:       [{ type: String }],
