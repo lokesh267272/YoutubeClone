@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { formatDate } from '../../data/mockData.js';
+import { formatDate } from '../../utils/formatters.js';
 import api from '../../api/axios.js';
 
 const AVATAR_COLORS = ['#4d96ff', '#ffd93d', '#6bcb77', '#c77dff', '#ff6b6b', '#ff9a3c', '#00b4d8', '#f72585'];

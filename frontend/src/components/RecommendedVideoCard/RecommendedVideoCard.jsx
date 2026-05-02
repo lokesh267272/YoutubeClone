@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { formatViews, formatDate } from '../../data/mockData.js';
+import { formatViews, formatDate } from '../../utils/formatters.js';
 
 export default function RecommendedVideoCard({ video }) {
   const navigate = useNavigate();

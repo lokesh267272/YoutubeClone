@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatViews, formatDate } from "../../data/mockData.js";
+import { formatViews, formatDate } from "../../utils/formatters.js";
 
 export default function ChannelVideoCard({ video, isOwner, onEdit, onDelete }) {
   const navigate = useNavigate();

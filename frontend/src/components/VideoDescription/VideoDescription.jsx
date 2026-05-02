@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatViews, formatDate } from '../../data/mockData.js';
+import { formatViews, formatDate } from '../../utils/formatters.js';
 
 export default function VideoDescription({ video }) {
   const [expanded, setExpanded] = useState(false);
