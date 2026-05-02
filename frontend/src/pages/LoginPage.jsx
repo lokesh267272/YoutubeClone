@@ -9,7 +9,7 @@ const DEMO_USER = {
   email: 'test@example.com',
   password: 'password123',
   avatarBg: '#4d96ff',
-  channelId: 'channel01',
+  channelId: 'ch01',
 };
 
 function validate(fields) {
