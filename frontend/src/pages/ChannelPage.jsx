@@ -209,7 +209,7 @@ export default function ChannelPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-surface-variant text-on-surface rounded-full text-label-md font-label-md hover:bg-surface-variant transition-colors"
                       >
                         <span className="material-symbols-outlined text-[18px]">edit</span>
-                        Customize
+                        Edit channel
                       </button>
                     </>
                   ) : (
