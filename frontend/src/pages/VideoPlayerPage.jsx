@@ -242,10 +242,14 @@ export default function VideoPlayerPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={() => navigate(`/channel/${video.channelId}`)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 hover:opacity-90 transition-opacity"
+                className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white font-semibold flex-shrink-0 hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: video.channelAvatarBg || '#4d96ff' }}
               >
-                {video.channelInitial}
+                {video.channelProfileUrl ? (
+                  <img src={video.channelProfileUrl} alt={video.channelName} className="w-full h-full object-cover" />
+                ) : (
+                  video.channelInitial
+                )}
               </button>
 
               <button
