@@ -6,14 +6,11 @@ A YouTube clone built with the MERN stack (MongoDB, Express, React, Node.js). Us
 
 ## Demo Video
 
-[![Watch the project demo](https://img.youtube.com/vi/vzoFl3U-sZI/hqdefault.jpg)](https://youtu.be/vzoFl3U-sZI)
+[![Watch the project demo](https://img.youtube.com/vi/rkblUoutuUg/hqdefault.jpg)](https://youtu.be/rkblUoutuUg)
 
-- YouTube demo: `https://youtu.be/vzoFl3U-sZI`
-- Local demo page: [demo-video.html](./demo-video.html)
+- YouTube demo: `https://youtu.be/rkblUoutuUg`
 
-The local demo page includes:
-- a YouTube embed for sharing online
-- a local MP4 player that looks for `../YouTube Project Demo .mp4`
+This README points directly to the project demo video on YouTube.
 
 ---
 
@@ -146,7 +143,6 @@ YoutubeClone/
 |       |-- pages/      HomePage, LoginPage, RegisterPage, VideoPlayerPage, ChannelPage
 |       `-- data/       categories and helper functions
 |
-|-- demo-video.html
 `-- README.md
 ```
 
