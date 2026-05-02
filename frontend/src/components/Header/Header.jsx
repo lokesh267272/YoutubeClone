@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import CreateChannelModal from '../CreateChannelModal.jsx';
+import CreateChannelModal from '../CreateChannelModal/CreateChannelModal.jsx';
 
 export default function Header({ onToggleSidebar, onSearch }) {
   const { user, logout } = useAuth();

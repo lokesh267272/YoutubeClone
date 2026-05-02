@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
-import api from '../api/axios.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import api from '../../api/axios.js';
 
 const AVATAR_COLORS = [
   '#4d96ff', '#ff6b6b', '#6bcb77', '#ffd93d',
@@ -188,7 +188,7 @@ export default function CreateChannelModal({ onClose }) {
                 placeholder="https://example.com/avatar.jpg"
               />
               {profileUrl.trim() && !isValidUrl(profileUrl.trim()) && (
-                <p className="text-body-sm text-secondary mt-0.5">Not a valid URL — your initial will be used instead.</p>
+                <p className="text-body-sm text-secondary mt-0.5">Not a valid URL â€” your initial will be used instead.</p>
               )}
             </div>
 

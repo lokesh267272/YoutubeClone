@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
-import CreateChannelModal from '../CreateChannelModal.jsx';
+import CreateChannelModal from '../CreateChannelModal/CreateChannelModal.jsx';
 
 const NAV_LINKS = [
   { icon: 'home', label: 'Home', path: '/' },
