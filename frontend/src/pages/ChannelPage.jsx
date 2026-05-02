@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import Header from "../components/Header/Header.jsx";
 import Sidebar from "../components/Sidebar/Sidebar.jsx";
-import { CATEGORIES, formatViews, formatDate } from "../data/mockData.js";
+import { CATEGORIES } from "../data/categories.js";
+import { formatViews, formatDate } from "../data/mockData.js";
 import api from "../api/axios.js";
 
 const TABS = ["Home", "Videos", "Shorts", "Live", "Playlists", "Posts", "Store"];
@@ -281,6 +282,7 @@ export default function ChannelPage() {
           channelName: channel.channelName,
           channelAvatarBg: channel.avatarBg,
           channelInitial: channel.initial,
+          channelProfileUrl: channel.profileUrl || '',
         });
         setVideos(prev => [data, ...prev]);
       } else {
@@ -346,10 +348,14 @@ export default function ChannelPage() {
           <div className="px-4 md:px-8 lg:px-10 border-b border-surface-variant">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-end pt-3 pb-4">
               <div
-                className="w-20 h-20 sm:w-24 sm:h-24 lg:w-[128px] lg:h-[128px] rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 -mt-12 sm:-mt-14 lg:-mt-20 border-[3px] border-background shadow-lg text-3xl sm:text-4xl lg:text-5xl"
+                className="w-20 h-20 sm:w-24 sm:h-24 lg:w-[128px] lg:h-[128px] rounded-full overflow-hidden flex items-center justify-center text-white font-bold flex-shrink-0 -mt-12 sm:-mt-14 lg:-mt-20 border-[3px] border-background shadow-lg text-3xl sm:text-4xl lg:text-5xl"
                 style={{ backgroundColor: channel.avatarBg }}
               >
-                {channel.initial}
+                {channel.profileUrl ? (
+                  <img src={channel.profileUrl} alt={channel.channelName} className="w-full h-full object-cover" />
+                ) : (
+                  channel.initial
+                )}
               </div>
 
               <div className="flex-1 min-w-0">

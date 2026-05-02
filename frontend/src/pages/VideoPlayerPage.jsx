@@ -5,6 +5,7 @@ import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import CommentSection from '../components/CommentSection/CommentSection.jsx';
 import { formatViews, formatDate } from '../data/mockData.js';
+import { CATEGORIES } from '../data/categories.js';
 import api from '../api/axios.js';
 
 /* ─────────────────────────── helpers ─────────────────────────── */
@@ -192,9 +193,7 @@ export default function VideoPlayerPage() {
   const recommendations = allVideos.filter(v => v._id !== id);
   const filteredRecs = recFilter === 'All'
     ? recommendations
-    : recFilter === `From ${video.channelName}`
-      ? recommendations.filter(v => v.channelName === video.channelName)
-      : recommendations.filter(v => v.category === recFilter);
+    : recommendations.filter(v => v.category === recFilter);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -379,19 +378,19 @@ export default function VideoPlayerPage() {
 
           {/* Filter chips */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4">
-            {['All', `From ${video.channelName}`, video.category].map(chip => (
+            {CATEGORIES.map(cat => (
               <button
-                key={chip}
-                onClick={() => setRecFilter(chip)}
+                key={cat}
+                onClick={() => setRecFilter(cat)}
                 className={`
                   px-3 py-1.5 rounded-lg text-label-md font-label-md whitespace-nowrap flex-shrink-0 transition-colors
-                  ${recFilter === chip
+                  ${recFilter === cat
                     ? 'bg-on-surface text-surface-container-lowest'
                     : 'bg-surface-container-low border border-surface-variant text-on-surface hover:bg-surface-variant'
                   }
                 `}
               >
-                {chip}
+                {cat}
               </button>
             ))}
           </div>
