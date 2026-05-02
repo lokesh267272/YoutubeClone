@@ -68,6 +68,18 @@ export const updateChannel = async (req, res) => {
     if (links !== undefined) channel.links = links;
 
     await channel.save();
+    // Keep saved videos in sync with channel branding shown on cards and watch pages.
+    await Video.updateMany(
+      { channelId: channel._id },
+      {
+        $set: {
+          channelName: channel.channelName,
+          channelAvatarBg: channel.avatarBg,
+          channelInitial: channel.initial,
+          channelProfileUrl: channel.profileUrl,
+        },
+      }
+    );
     res.json(channel);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });

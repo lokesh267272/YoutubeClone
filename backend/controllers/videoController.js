@@ -34,7 +34,7 @@ export const getVideo = async (req, res) => {
 
 export const createVideo = async (req, res) => {
   const { title, thumbnailUrl, videoUrl, description, duration, channelId,
-          channelName, channelAvatarBg, channelInitial, category } = req.body;
+          channelName, channelAvatarBg, channelInitial, channelProfileUrl, category } = req.body;
 
   if (!title) return res.status(400).json({ message: 'Title is required' });
 
@@ -42,7 +42,7 @@ export const createVideo = async (req, res) => {
     // Store a snapshot of channel display data so cards can render without extra joins.
     const video = await Video.create({
       title, thumbnailUrl, videoUrl, description, duration,
-      channelId, channelName, channelAvatarBg, channelInitial, category,
+      channelId, channelName, channelAvatarBg, channelInitial, channelProfileUrl, category,
       uploader: req.user.userId,
     });
 
