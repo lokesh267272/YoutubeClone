@@ -5,23 +5,16 @@ import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import FilterBar from '../components/FilterBar/FilterBar.jsx';
 import VideoCard from '../components/VideoCard/VideoCard.jsx';
 import BottomNav from '../components/BottomNav/BottomNav.jsx';
+import { useSidebar } from '../context/SidebarContext.jsx';
 import api from '../api/axios.js';
 
 export default function HomePage() {
   const [searchParams] = useSearchParams();
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth < 1024) setSidebarOpen(false);
-    }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     setLoading(true);

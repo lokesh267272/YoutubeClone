@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useSidebar } from '../context/SidebarContext.jsx';
 import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import CommentSection from '../components/CommentSection/CommentSection.jsx';
@@ -22,7 +23,7 @@ export default function VideoPlayerPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [video, setVideo] = useState(null);
   const [allVideos, setAllVideos] = useState([]);
   const [loading, setLoading] = useState(true);

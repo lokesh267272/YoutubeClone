@@ -1,11 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useSidebar } from "../context/SidebarContext.jsx";
 import Header from "../components/Header/Header.jsx";
 import Sidebar from "../components/Sidebar/Sidebar.jsx";
 import ChannelVideoCard from "../components/ChannelVideoCard/ChannelVideoCard.jsx";
 import VideoModal from "../components/VideoModal/VideoModal.jsx";
 import BottomNav from "../components/BottomNav/BottomNav.jsx";
+import EditChannelModal from "../components/EditChannelModal/EditChannelModal.jsx";
 import api from "../api/axios.js";
 
 const TABS = ["Home", "Videos", "Shorts", "Live", "Playlists", "Posts", "Store"];
@@ -21,13 +23,14 @@ export default function ChannelPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
   const [activeTab, setActiveTab] = useState("Videos");
   const [sortBy, setSortBy] = useState("Latest");
   const [subscribed, setSubscribed] = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [videoModal, setVideoModal] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [editChannelOpen, setEditChannelOpen] = useState(false);
   const [channel, setChannel] = useState(null);
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -135,7 +138,7 @@ export default function ChannelPage() {
 
           {/* ── Channel Info ── */}
           <div className="px-4 md:px-8 lg:px-10 border-b border-surface-variant">
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-end pt-3 pb-4">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start pt-3 pb-4">
 
               {/* Avatar */}
               <div
@@ -149,64 +152,67 @@ export default function ChannelPage() {
                 )}
               </div>
 
-              {/* Meta */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold text-on-surface leading-tight mb-1">
-                  {channel.channelName}
-                </h1>
-                <div className="flex flex-wrap items-center gap-1.5 text-body-sm text-secondary mb-2">
-                  <span>{channel.handle}</span>
-                  <span>•</span>
-                  <span>{formatSubscribers(channel.subscribers + (subscribed ? 1 : 0))} subscribers</span>
-                  <span>•</span>
-                  <span>{videos.length.toLocaleString()} videos</span>
-                </div>
-
+              {/* Meta + Actions */}
+              <div className="flex-1 min-w-0 flex flex-col gap-3">
                 <div>
-                  <p className={`text-body-sm text-secondary max-w-2xl whitespace-pre-wrap ${!descExpanded ? "line-clamp-2" : ""}`}>
-                    {channel.description}
-                  </p>
-                  {channel.description && channel.description.length > 100 && (
-                    <button
-                      onClick={() => setDescExpanded(p => !p)}
-                      className="text-body-sm font-medium text-on-surface hover:underline mt-0.5"
-                    >
-                      {descExpanded ? "Show less" : "...more"}
-                    </button>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-on-surface leading-tight mb-1">
+                    {channel.channelName}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-1.5 text-body-sm text-secondary mb-2">
+                    <span>{channel.handle}</span>
+                    <span>•</span>
+                    <span>{formatSubscribers(channel.subscribers + (subscribed ? 1 : 0))} subscribers</span>
+                    <span>•</span>
+                    <span>{videos.length.toLocaleString()} videos</span>
+                  </div>
+
+                  <div>
+                    <p className={`text-body-sm text-secondary max-w-2xl whitespace-pre-wrap ${!descExpanded ? "line-clamp-2" : ""}`}>
+                      {channel.description}
+                    </p>
+                    {channel.description && channel.description.length > 100 && (
+                      <button
+                        onClick={() => setDescExpanded(p => !p)}
+                        className="text-body-sm font-medium text-on-surface hover:underline mt-0.5"
+                      >
+                        {descExpanded ? "Show less" : "...more"}
+                      </button>
+                    )}
+                  </div>
+
+                  {channel.links && channel.links.length > 0 && (
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="material-symbols-outlined text-[15px] text-secondary">link</span>
+                      {channel.links.slice(0, 1).map((link, i) => (
+                        <span key={i} className="text-body-sm text-blue-400 hover:underline cursor-pointer">{link}</span>
+                      ))}
+                      {channel.links.length > 1 && (
+                        <span className="text-body-sm text-secondary">and {channel.links.length - 1} more link{channel.links.length > 2 ? "s" : ""}</span>
+                      )}
+                    </div>
                   )}
                 </div>
 
-                {channel.links && channel.links.length > 0 && (
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    <span className="material-symbols-outlined text-[15px] text-secondary">link</span>
-                    {channel.links.slice(0, 1).map((link, i) => (
-                      <span key={i} className="text-body-sm text-blue-400 hover:underline cursor-pointer">{link}</span>
-                    ))}
-                    {channel.links.length > 1 && (
-                      <span className="text-body-sm text-secondary">and {channel.links.length - 1} more link{channel.links.length > 2 ? "s" : ""}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 flex-shrink-0 pb-1">
-                {isOwner ? (
-                  <>
-                    <button
-                      onClick={() => setVideoModal({ mode: "upload" })}
-                      className="flex items-center gap-2 px-4 py-2 bg-on-surface text-surface-container-lowest rounded-full text-label-md font-label-md hover:opacity-85 transition-opacity"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">upload</span>
-                      Upload video
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-surface-variant text-on-surface rounded-full text-label-md font-label-md hover:bg-surface-variant transition-colors">
-                      <span className="material-symbols-outlined text-[18px]">edit</span>
-                      Customize
-                    </button>
-                  </>
-                ) : (
-                  <>
+                {/* Actions */}
+                <div className="flex items-center gap-2">
+                  {isOwner ? (
+                    <>
+                      <button
+                        onClick={() => setVideoModal({ mode: "upload" })}
+                        className="flex items-center gap-2 px-4 py-2 bg-on-surface text-surface-container-lowest rounded-full text-label-md font-label-md hover:opacity-85 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">upload</span>
+                        Upload video
+                      </button>
+                      <button
+                        onClick={() => setEditChannelOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-surface-variant text-on-surface rounded-full text-label-md font-label-md hover:bg-surface-variant transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                        Customize
+                      </button>
+                    </>
+                  ) : (
                     <button
                       onClick={() => setSubscribed(p => !p)}
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-label-md font-label-md transition-all ${subscribed ? "bg-surface-container-low border border-surface-variant text-on-surface hover:bg-surface-variant" : "bg-on-surface text-surface-container-lowest hover:opacity-85"}`}
@@ -215,11 +221,8 @@ export default function ChannelPage() {
                       <span>{subscribed ? "Subscribed" : "Subscribe"}</span>
                       {subscribed && <span className="material-symbols-outlined text-[18px]">arrow_drop_down</span>}
                     </button>
-                    <button className="px-4 py-2 bg-surface-container-low border border-surface-variant text-on-surface rounded-full text-label-md font-label-md hover:bg-surface-variant transition-colors">
-                      Community
-                    </button>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
@@ -305,6 +308,14 @@ export default function ChannelPage() {
           onClose={() => setVideoModal(null)}
           onSave={handleSaveVideo}
           saving={saving}
+        />
+      )}
+
+      {editChannelOpen && (
+        <EditChannelModal
+          channel={channel}
+          onClose={() => setEditChannelOpen(false)}
+          onSave={(updated) => setChannel(prev => ({ ...prev, ...updated }))}
         />
       )}
 
