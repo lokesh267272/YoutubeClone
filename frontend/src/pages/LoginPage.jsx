@@ -1,16 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-
-// Pre-seeded demo account so evaluators can log in without registering
-const DEMO_USER = {
-  _id: 'user_demo',
-  username: 'JohnDoe',
-  email: 'test@example.com',
-  password: 'password123',
-  avatarBg: '#4d96ff',
-  channelId: 'ch01',
-};
+import api from '../api/axios.js';
 
 function validate(fields) {
   const errors = {};
@@ -117,50 +108,15 @@ export default function LoginPage() {
     setGlobalError('');
 
     try {
-      await new Promise(r => setTimeout(r, 700));
-
-      const emailLower = fields.email.trim().toLowerCase();
-
-      // 1. Check demo account
-      let matchedUser = null;
-      if (emailLower === DEMO_USER.email && fields.password === DEMO_USER.password) {
-        matchedUser = DEMO_USER;
-      }
-
-      // 2. Check localStorage registered users
-      if (!matchedUser) {
-        const storedUsers = JSON.parse(localStorage.getItem('yt_mock_users') || '[]');
-        const found = storedUsers.find(
-          u => u.email.toLowerCase() === emailLower && u.password === fields.password,
-        );
-        if (found) matchedUser = found;
-      }
-
-      if (!matchedUser) {
-        setGlobalError('Incorrect email or password. Try test@example.com / password123.');
-        setLoading(false);
-        return;
-      }
-
-      // Issue a mock JWT-shaped token
-      const mockToken = btoa(JSON.stringify({
-        userId: matchedUser._id,
-        username: matchedUser.username,
-        email: matchedUser.email,
-        exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
-      }));
-
-      login(mockToken, {
-        _id: matchedUser._id,
-        username: matchedUser.username,
-        email: matchedUser.email,
-        avatarBg: matchedUser.avatarBg,
-        channelId: matchedUser.channelId || null,
+      const { data } = await api.post('/auth/login', {
+        email: fields.email.trim(),
+        password: fields.password,
       });
-
+      login(data.token, data.user);
       navigate('/', { replace: true });
-    } catch {
-      setGlobalError('Something went wrong. Please try again.');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      setGlobalError(msg);
     } finally {
       setLoading(false);
     }
