@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { mockChannels } from '../data/mockData.js';
+import api from '../api/axios.js';
 
 const AVATAR_COLORS = [
   '#4d96ff', '#ff6b6b', '#6bcb77', '#ffd93d',
@@ -22,11 +22,12 @@ export default function CreateChannelModal({ onClose }) {
 
   const [name, setName] = useState(user?.username || '');
   const [handle, setHandle] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
   const [avatarColor, setAvatarColor] = useState(user?.avatarBg || AVATAR_COLORS[0]);
   const [handleEdited, setHandleEdited] = useState(false);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  // Auto-generate handle from name unless user has manually edited it
   useEffect(() => {
     if (!handleEdited && name.trim()) {
       setHandle(`@${slugify(name.trim())}-${randomSuffix()}`);
@@ -46,7 +47,7 @@ export default function CreateChannelModal({ onClose }) {
     setError('');
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     const trimmedName = name.trim();
     const trimmedHandle = handle.trim();
 
@@ -54,30 +55,26 @@ export default function CreateChannelModal({ onClose }) {
     if (trimmedName.length > 100) { setError('Name must be under 100 characters.'); return; }
     if (!trimmedHandle || trimmedHandle === '@') { setError('Handle is required.'); return; }
 
-    const handleConflict = mockChannels.some(
-      (c) => c.handle.toLowerCase() === trimmedHandle.toLowerCase(),
-    );
-    if (handleConflict) { setError('That handle is already taken. Try another.'); return; }
-
-    const newChannel = {
-      _id: `ch_${Date.now()}`,
-      channelName: trimmedName,
-      handle: trimmedHandle,
-      description: '',
-      bannerUrl: `https://picsum.photos/seed/${Date.now()}/1280/351`,
-      avatarBg: avatarColor,
-      initial: trimmedName[0].toUpperCase(),
-      subscribers: 0,
-      videoCount: 0,
-      joinedDate: new Date().toISOString().slice(0, 10),
-      links: [],
-      ownerId: user._id,
-    };
-
-    mockChannels.push(newChannel);
-    updateUser({ channelId: newChannel._id });
-    onClose();
-    navigate(`/channel/${newChannel._id}`);
+    setSaving(true);
+    try {
+      const { data: channel } = await api.post('/channels', {
+        channelName: trimmedName,
+        handle: trimmedHandle,
+        avatarBg: avatarColor,
+        initial: trimmedName[0].toUpperCase(),
+        description: '',
+        links: [],
+        bannerUrl: bannerUrl.trim(),
+      });
+      updateUser({ channelId: channel._id });
+      onClose();
+      navigate(`/channel/${channel._id}`);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      setError(msg);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleBackdropClick(e) {
@@ -158,9 +155,27 @@ export default function CreateChannelModal({ onClose }) {
               />
             </div>
 
-            {error && (
-              <p className="text-body-sm text-error">{error}</p>
-            )}
+            <div className="flex flex-col gap-1">
+              <label className="text-body-sm text-secondary">Banner image URL <span className="text-on-surface-variant">(optional)</span></label>
+              <input
+                type="url"
+                value={bannerUrl}
+                onChange={(e) => setBannerUrl(e.target.value)}
+                className="w-full border border-surface-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface bg-surface-container focus:outline-none focus:border-secondary transition-colors"
+                placeholder="https://example.com/banner.jpg"
+              />
+              {bannerUrl.trim() && (
+                <img
+                  src={bannerUrl.trim()}
+                  alt="Banner preview"
+                  className="mt-1 w-full h-20 object-cover rounded-lg border border-surface-variant"
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  onLoad={(e) => { e.currentTarget.style.display = ''; }}
+                />
+              )}
+            </div>
+
+            {error && <p className="text-body-sm text-error">{error}</p>}
           </div>
 
           {/* Terms */}
@@ -181,9 +196,10 @@ export default function CreateChannelModal({ onClose }) {
           </button>
           <button
             onClick={handleCreate}
-            disabled={!name.trim()}
-            className="px-5 py-2 rounded-full text-body-md font-medium bg-primary text-on-primary hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            disabled={!name.trim() || saving}
+            className="px-5 py-2 rounded-full text-body-md font-medium bg-primary text-on-primary hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           >
+            {saving && <span className="w-4 h-4 border-2 border-on-primary/40 border-t-on-primary rounded-full animate-spin" />}
             Create channel
           </button>
         </div>
