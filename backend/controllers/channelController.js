@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import Video from '../models/Video.js';
 
 export const createChannel = async (req, res) => {
-  const { channelName, handle, avatarBg, initial, description, links } = req.body;
+  const { channelName, handle, avatarBg, initial, description, links, bannerUrl } = req.body;
 
   if (!channelName) return res.status(400).json({ message: 'Channel name is required' });
   if (!handle) return res.status(400).json({ message: 'Handle is required' });
@@ -13,7 +13,7 @@ export const createChannel = async (req, res) => {
     if (existing) return res.status(400).json({ message: 'Handle already taken' });
 
     const channel = await Channel.create({
-      channelName, handle, avatarBg, initial, description, links,
+      channelName, handle, avatarBg, initial, description, links, bannerUrl,
       owner: req.user.userId,
     });
 
