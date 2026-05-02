@@ -1,0 +1,193 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import { mockChannels } from '../data/mockData.js';
+
+const AVATAR_COLORS = [
+  '#4d96ff', '#ff6b6b', '#6bcb77', '#ffd93d',
+  '#c77dff', '#00b4d8', '#ff9a3c', '#f72585',
+];
+
+function slugify(str) {
+  return str.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+}
+
+function randomSuffix() {
+  return Math.random().toString(36).slice(2, 6);
+}
+
+export default function CreateChannelModal({ onClose }) {
+  const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
+
+  const [name, setName] = useState(user?.username || '');
+  const [handle, setHandle] = useState('');
+  const [avatarColor, setAvatarColor] = useState(user?.avatarBg || AVATAR_COLORS[0]);
+  const [handleEdited, setHandleEdited] = useState(false);
+  const [error, setError] = useState('');
+
+  // Auto-generate handle from name unless user has manually edited it
+  useEffect(() => {
+    if (!handleEdited && name.trim()) {
+      setHandle(`@${slugify(name.trim())}-${randomSuffix()}`);
+    }
+  }, [name, handleEdited]);
+
+  function handleNameChange(e) {
+    setName(e.target.value);
+    setError('');
+  }
+
+  function handleHandleChange(e) {
+    setHandleEdited(true);
+    let val = e.target.value;
+    if (!val.startsWith('@')) val = '@' + val.replace(/^@+/, '');
+    setHandle(val);
+    setError('');
+  }
+
+  function handleCreate() {
+    const trimmedName = name.trim();
+    const trimmedHandle = handle.trim();
+
+    if (!trimmedName) { setError('Channel name is required.'); return; }
+    if (trimmedName.length > 100) { setError('Name must be under 100 characters.'); return; }
+    if (!trimmedHandle || trimmedHandle === '@') { setError('Handle is required.'); return; }
+
+    const handleConflict = mockChannels.some(
+      (c) => c.handle.toLowerCase() === trimmedHandle.toLowerCase(),
+    );
+    if (handleConflict) { setError('That handle is already taken. Try another.'); return; }
+
+    const newChannel = {
+      _id: `ch_${Date.now()}`,
+      channelName: trimmedName,
+      handle: trimmedHandle,
+      description: '',
+      bannerUrl: `https://picsum.photos/seed/${Date.now()}/1280/351`,
+      avatarBg: avatarColor,
+      initial: trimmedName[0].toUpperCase(),
+      subscribers: 0,
+      videoCount: 0,
+      joinedDate: new Date().toISOString().slice(0, 10),
+      links: [],
+      ownerId: user._id,
+    };
+
+    mockChannels.push(newChannel);
+    updateUser({ channelId: newChannel._id });
+    onClose();
+    navigate(`/channel/${newChannel._id}`);
+  }
+
+  function handleBackdropClick(e) {
+    if (e.target === e.currentTarget) onClose();
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-surface-variant">
+          <h2 className="text-title-lg font-title-lg text-on-surface">How you'll appear</h2>
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-surface-variant rounded-full transition-colors"
+            aria-label="Close"
+          >
+            <span className="material-symbols-outlined text-on-surface text-[20px]">close</span>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6 flex flex-col items-center gap-6">
+
+          {/* Avatar preview + color picker */}
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md transition-colors duration-200"
+              style={{ backgroundColor: avatarColor }}
+            >
+              {name.trim() ? name.trim()[0].toUpperCase() : '?'}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {AVATAR_COLORS.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setAvatarColor(color)}
+                  className="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                  style={{
+                    backgroundColor: color,
+                    borderColor: avatarColor === color ? 'white' : 'transparent',
+                    outline: avatarColor === color ? `2px solid ${color}` : 'none',
+                    outlineOffset: '2px',
+                  }}
+                  aria-label={`Select color ${color}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Inputs */}
+          <div className="w-full flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-body-sm text-secondary">Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={handleNameChange}
+                maxLength={100}
+                className="w-full border border-surface-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface bg-surface-container focus:outline-none focus:border-secondary transition-colors"
+                placeholder="Your channel name"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="text-body-sm text-secondary">Handle</label>
+              <input
+                type="text"
+                value={handle}
+                onChange={handleHandleChange}
+                className="w-full border border-surface-variant rounded-lg px-3 py-2.5 text-body-md text-on-surface bg-surface-container focus:outline-none focus:border-secondary transition-colors"
+                placeholder="@yourhandle"
+              />
+            </div>
+
+            {error && (
+              <p className="text-body-sm text-error">{error}</p>
+            )}
+          </div>
+
+          {/* Terms */}
+          <p className="text-body-sm text-secondary text-center leading-relaxed">
+            By clicking Create Channel you agree to YouTube's{' '}
+            <span className="text-primary cursor-pointer hover:underline">Terms of Service</span>.
+            Changes made to your name and profile picture are visible only on YouTube.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 pb-5">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 rounded-full text-body-md text-on-surface hover:bg-surface-variant transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleCreate}
+            disabled={!name.trim()}
+            className="px-5 py-2 rounded-full text-body-md font-medium bg-primary text-on-primary hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Create channel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

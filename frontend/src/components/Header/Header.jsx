@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import CreateChannelModal from '../CreateChannelModal.jsx';
 
 export default function Header({ onToggleSidebar, onSearch }) {
   const { user, logout } = useAuth();
@@ -8,6 +9,7 @@ export default function Header({ onToggleSidebar, onSearch }) {
   const [searchValue, setSearchValue] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [createChannelOpen, setCreateChannelOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   // Close dropdown when clicking outside
@@ -157,11 +159,20 @@ export default function Header({ onToggleSidebar, onSearch }) {
                   <p className="text-body-sm text-secondary truncate">{user.email}</p>
                 </div>
                 <button
-                  onClick={() => navigate(`/channel/${user.channelId || 'my'}`)}
+                  onClick={() => {
+                    setDropdownOpen(false);
+                    if (user.channelId) {
+                      navigate(`/channel/${user.channelId}`);
+                    } else {
+                      setCreateChannelOpen(true);
+                    }
+                  }}
                   className="w-full text-left px-4 py-3 text-body-md text-on-surface hover:bg-surface-variant flex items-center gap-3 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-[20px]">manage_accounts</span>
-                  Your channel
+                  <span className="material-symbols-outlined text-[20px]">
+                    {user.channelId ? 'manage_accounts' : 'add_circle'}
+                  </span>
+                  {user.channelId ? 'Your channel' : 'Create channel'}
                 </button>
                 <button
                   onClick={handleLogout}
@@ -183,6 +194,11 @@ export default function Header({ onToggleSidebar, onSearch }) {
           </button>
         )}
       </div>
+
+      {/* ── Create Channel Modal ── */}
+      {createChannelOpen && (
+        <CreateChannelModal onClose={() => setCreateChannelOpen(false)} />
+      )}
 
       {/* ── Mobile search overlay ── */}
       {mobileSearchOpen && (
