@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import api from '../api/axios.js';
 
 const AVATAR_COLORS = ['#4d96ff', '#ffd93d', '#6bcb77', '#c77dff', '#ff6b6b', '#ff9a3c', '#00b4d8', '#f72585'];
 
@@ -125,37 +126,22 @@ export default function RegisterPage() {
     setGlobalError('');
 
     try {
-      // Check if email already registered (mock check against localStorage)
-      const existingUsers = JSON.parse(localStorage.getItem('yt_mock_users') || '[]');
-      const emailTaken = existingUsers.some(u => u.email.toLowerCase() === fields.email.trim().toLowerCase());
-
-      if (emailTaken) {
-        setErrors({ email: 'An account with this email already exists.' });
-        setLoading(false);
-        return;
-      }
-
-      // Simulate network delay
-      await new Promise(r => setTimeout(r, 800));
-
-      // Save mock user to localStorage
-      const newUser = {
-        _id: `user_${Date.now()}`,
+      await api.post('/auth/register', {
         username: fields.username.trim(),
-        email: fields.email.trim().toLowerCase(),
-        password: fields.password,               // plain for mock only
-        avatarBg: AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)],
-        channelId: null,
-        createdAt: new Date().toISOString(),
-      };
-      localStorage.setItem('yt_mock_users', JSON.stringify([...existingUsers, newUser]));
-
+        email: fields.email.trim(),
+        password: fields.password,
+      });
       setSuccess(true);
-
-      // Redirect to login after 1.5s so user sees the success state
       setTimeout(() => navigate('/login', { state: { registeredEmail: fields.email.trim() } }), 1500);
-    } catch {
-      setGlobalError('Something went wrong. Please try again.');
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      if (msg.toLowerCase().includes('email')) {
+        setErrors({ email: msg });
+      } else if (msg.toLowerCase().includes('username')) {
+        setErrors({ username: msg });
+      } else {
+        setGlobalError(msg);
+      }
     } finally {
       setLoading(false);
     }
