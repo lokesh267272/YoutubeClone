@@ -1,44 +1,14 @@
-# YouTube Clone — MERN Stack
+# YouTube Clone
 
-A full-stack YouTube clone built with MongoDB, Express, React (Vite), and Node.js. Supports user authentication, video browsing, channel management, comments, likes/dislikes, search, and category filtering.
-
----
-
-## Features
-
-- **Authentication** — Register, login, logout with JWT (7-day expiry)
-- **Home Page** — Video grid with real-time search and category filtering
-- **Video Player** — HTML5 video player, like/dislike toggle, expandable description, view count
-- **Comments** — Add, edit, delete comments (own comments only)
-- **Channel Page** — Create channel, upload videos, edit/delete own videos, subscribe button
-- **Responsive Design** — Mobile, tablet, and desktop layouts
-- **Seed Data** — 12+ pre-loaded videos across 6+ categories for evaluators
+A YouTube clone built with the MERN stack (MongoDB, Express, React, Node.js). Users can browse videos, search, filter by category, create a channel, upload videos, like/dislike, and comment.
 
 ---
 
-## Tech Stack
+## Getting Started
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 (Vite), React Router v6, Axios, CSS Modules / Tailwind |
-| Backend | Node.js, Express.js, ES Modules |
-| Database | MongoDB (Atlas or local) + Mongoose ODM |
-| Auth | JWT (jsonwebtoken) + bcryptjs |
-| Dev Tools | Nodemon, dotenv, cors |
+You need Node.js and either a MongoDB Atlas account or MongoDB running locally.
 
----
-
-## Prerequisites
-
-- Node.js 18+
-- npm 9+
-- MongoDB Atlas account **or** MongoDB installed locally
-
----
-
-## Setup Instructions
-
-### 1. Clone the repository
+### 1. Clone the repo
 
 ```bash
 git clone https://github.com/lokesh267272/YoutubeClone.git
@@ -48,129 +18,84 @@ cd YoutubeClone
 ### 2. Install dependencies
 
 ```bash
-# Backend
+# backend
 cd backend
 npm install
 
-# Frontend
+# frontend (open a new terminal or go back)
 cd ../frontend
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Set up environment variables
 
-**`backend/.env`** — create this file:
+Create a `.env` file inside the `backend` folder:
+
 ```
 PORT=5000
-MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/youtubeclone
-JWT_SECRET=your_super_secret_key_here
+MONGO_URI=your_mongodb_connection_string_here
+JWT_SECRET=pick_any_secret_key
 ```
 
-**`frontend/.env`** — already present:
+The frontend already has a `.env` file with:
+
 ```
 VITE_API_URL=http://localhost:5000/api
 ```
 
-### 4. Seed the database
+If your backend runs on a different port, update that too.
+
+### 4. Seed the database (optional but recommended)
+
+This loads 15 real videos across 6 categories, 5 channels, and a demo account so you can test everything right away.
 
 ```bash
 cd backend
 node seed/seedData.js
 ```
 
-This inserts:
-- 1 default user (`test@example.com` / `password123`)
-- 1 channel owned by that user
-- 12+ videos across 6+ categories
-- Sample comments on various videos
+### 5. Run the app
 
-### 5. Run both servers
+You'll need two terminals open.
 
-Open two terminals:
-
-**Terminal 1 — Backend:**
+**Terminal 1 – backend:**
 ```bash
 cd backend
 npm run dev
 ```
-Server runs at `http://localhost:5000`
 
-**Terminal 2 — Frontend:**
+**Terminal 2 – frontend:**
 ```bash
 cd frontend
 npm run dev
 ```
-App runs at `http://localhost:5173`
+
+Frontend runs at `http://localhost:5173` and the backend at `http://localhost:5000`.
 
 ---
 
-## Environment Variables
+## Features
 
-### Backend (`backend/.env`)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PORT` | Port for Express server | `5000` |
-| `MONGO_URI` | MongoDB connection string | `mongodb+srv://...` |
-| `JWT_SECRET` | Secret key for signing JWTs | `my_secret_key` |
-
-### Frontend (`frontend/.env`)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_API_URL` | Base URL for backend API | `http://localhost:5000/api` |
-
----
-
-## API Endpoint Reference
-
-### Auth — `/api/auth`
-
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| POST | `/register` | No | Register new user |
-| POST | `/login` | No | Login, returns JWT + user |
-| GET | `/me` | Yes | Get current user from token |
-
-### Videos — `/api/videos`
-
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| GET | `/` | No | Get all videos (`?search=&category=`) |
-| GET | `/:id` | No | Get single video + increment views |
-| POST | `/` | Yes | Upload video |
-| PUT | `/:id` | Yes | Update video (owner only) |
-| DELETE | `/:id` | Yes | Delete video (owner only) |
-| PUT | `/:id/like` | Yes | Toggle like |
-| PUT | `/:id/dislike` | Yes | Toggle dislike |
-
-### Channels — `/api/channels`
-
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| POST | `/` | Yes | Create channel |
-| GET | `/:id` | No | Get channel + its videos |
-| PUT | `/:id` | Yes | Update channel (owner only) |
-
-### Comments — `/api/comments`
-
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| GET | `/:videoId` | No | Get all comments for a video |
-| POST | `/:videoId` | Yes | Add comment |
-| PUT | `/:videoId/:commentId` | Yes | Edit comment (author only) |
-| DELETE | `/:videoId/:commentId` | Yes | Delete comment (author only) |
+- Register and log in with email and password (JWT auth)
+- Browse videos on the home page in a grid layout
+- Search for videos by title from the header
+- Filter videos by category (8 categories available)
+- Watch videos on a dedicated video player page
+- Like and dislike videos (toggle, mutually exclusive)
+- Add, edit, and delete your own comments
+- Create a channel after logging in
+- Upload, edit, and delete your own videos from your channel page
+- Edit your channel info (name, handle, description, banner, profile pic)
+- Fully responsive — works on mobile, tablet, and desktop
 
 ---
 
 ## Demo Account
 
-After seeding, you can log in immediately with:
+If you want to test without registering:
 
-| Field | Value |
-|-------|-------|
-| Email | `test@example.com` |
-| Password | `password123` |
+- **Email:** test@example.com  
+- **Password:** password123
 
 ---
 
@@ -178,43 +103,58 @@ After seeding, you can log in immediately with:
 
 ```
 YoutubeClone/
-├── frontend/
-│   ├── src/
-│   │   ├── api/           # Axios instance with JWT interceptor
-│   │   ├── components/    # Header, Sidebar, FilterBar, VideoCard, CommentSection, CreateChannelModal
-│   │   ├── context/       # AuthContext (JWT + user state)
-│   │   ├── data/          # mockData.js (formatting helpers + seed categories)
-│   │   └── pages/         # HomePage, LoginPage, RegisterPage, VideoPlayerPage, ChannelPage
-│   └── .env
-│
 ├── backend/
-│   ├── config/            # MongoDB connection
-│   ├── controllers/       # authController, videoController, channelController, commentController
-│   ├── middleware/        # JWT auth middleware
-│   ├── models/            # User, Video, Channel, Comment (Mongoose schemas)
-│   ├── routes/            # authRoutes, videoRoutes, channelRoutes, commentRoutes
-│   ├── seed/              # seedData.js
-│   └── .env
+│   ├── config/         mongodb connection
+│   ├── controllers/    auth, video, channel, comment logic
+│   ├── middleware/     JWT auth check
+│   ├── models/         User, Video, Channel, Comment schemas
+│   ├── routes/         all API routes
+│   └── server.js
+│
+├── frontend/
+│   └── src/
+│       ├── api/        axios instance
+│       ├── components/ Header, Sidebar, VideoCard, CommentSection, etc.
+│       ├── context/    AuthContext, SidebarContext
+│       ├── pages/      HomePage, LoginPage, RegisterPage, VideoPlayerPage, ChannelPage
+│       └── data/       categories and helper functions
 │
 └── README.md
 ```
 
 ---
 
-## Git Commits
+## API Routes
 
-This project was built incrementally with 30+ commits following the pattern:
-```
-feat: initialize project structure and git repo
-feat: set up React frontend with Vite
-feat: add mock data for videos and channels
-...
-feat: connect ChannelPage to backend
-docs: add README with setup instructions
-```
+**Auth** — `/api/auth`
+- `POST /register` — create account
+- `POST /login` — log in, get a token back
+- `GET /me` — get current logged-in user (requires token)
+
+**Videos** — `/api/videos`
+- `GET /` — get all videos, supports `?search=` and `?category=`
+- `GET /:id` — get a single video (also increments view count)
+- `POST /` — upload a video (auth required)
+- `PUT /:id` — update video (owner only)
+- `DELETE /:id` — delete video (owner only)
+- `PUT /:id/like` — toggle like
+- `PUT /:id/dislike` — toggle dislike
+
+**Channels** — `/api/channels`
+- `POST /` — create a channel (auth required)
+- `GET /:id` — get channel info and its videos
+- `PUT /:id` — update channel (owner only)
+
+**Comments** — `/api/comments`
+- `GET /:videoId` — get all comments for a video
+- `POST /:videoId` — post a comment (auth required)
+- `PUT /:videoId/:commentId` — edit your comment
+- `DELETE /:videoId/:commentId` — delete your comment
 
 ---
 
-## License
+## Tech Stack
 
-Built for academic submission. All video/thumbnail content is sourced from publicly available placeholder services.
+- **Frontend:** React 19, React Router v7, Axios, Tailwind CSS, Vite
+- **Backend:** Node.js, Express 5, Mongoose, JWT, bcryptjs
+- **Database:** MongoDB
