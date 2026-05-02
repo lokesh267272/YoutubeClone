@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import Video from '../models/Video.js';
 
 export const createChannel = async (req, res) => {
-  const { channelName, handle, avatarBg, initial, description, links, bannerUrl } = req.body;
+  const { channelName, handle, avatarBg, initial, description, links, bannerUrl, profileUrl } = req.body;
 
   // Require the basic channel identity fields before creating anything.
   if (!channelName) return res.status(400).json({ message: 'Channel name is required' });
@@ -15,7 +15,7 @@ export const createChannel = async (req, res) => {
 
     // Link the new channel back to the logged-in user as its owner.
     const channel = await Channel.create({
-      channelName, handle, avatarBg, initial, description, links, bannerUrl,
+      channelName, handle, avatarBg, initial, description, links, bannerUrl, profileUrl,
       owner: req.user.userId,
     });
 
