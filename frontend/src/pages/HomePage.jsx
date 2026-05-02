@@ -1,24 +1,24 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import FilterBar from '../components/FilterBar/FilterBar.jsx';
 import VideoCard from '../components/VideoCard/VideoCard.jsx';
-import { mockVideos } from '../data/mockData.js';
+import api from '../api/axios.js';
 
 export default function HomePage() {
   const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Close sidebar on mobile by default
   useEffect(() => {
     const isMobile = window.innerWidth < 768;
     if (isMobile) setSidebarOpen(false);
   }, []);
 
-  // Close sidebar on mobile when resizing down
   useEffect(() => {
     function handleResize() {
       if (window.innerWidth < 768) setSidebarOpen(false);
@@ -27,29 +27,19 @@ export default function HomePage() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const filteredVideos = useMemo(() => {
-    let result = mockVideos;
-
-    if (selectedCategory !== 'All') {
-      result = result.filter(v => v.category === selectedCategory);
-    }
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter(
-        v =>
-          v.title.toLowerCase().includes(q) ||
-          v.channelName.toLowerCase().includes(q) ||
-          v.description.toLowerCase().includes(q),
-      );
-    }
-
-    return result;
+  useEffect(() => {
+    setLoading(true);
+    const params = {};
+    if (searchQuery) params.search = searchQuery;
+    if (selectedCategory !== 'All') params.category = selectedCategory;
+    api.get('/videos', { params })
+      .then(({ data }) => setVideos(data))
+      .catch(() => setVideos([]))
+      .finally(() => setLoading(false));
   }, [searchQuery, selectedCategory]);
 
   function handleSearch(query) {
     setSearchQuery(query);
-    // When searching, reset category filter to All
     if (query) setSelectedCategory('All');
   }
 
@@ -87,14 +77,28 @@ export default function HomePage() {
 
           {/* Video grid */}
           <div className="p-gutter md:p-lg">
-            {filteredVideos.length > 0 ? (
+            {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-gutter gap-y-xl">
-                {filteredVideos.map(video => (
+                {Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-3 animate-pulse">
+                    <div className="w-full aspect-video bg-surface-container rounded-xl" />
+                    <div className="flex gap-2">
+                      <div className="w-9 h-9 rounded-full bg-surface-container flex-shrink-0" />
+                      <div className="flex flex-col gap-2 flex-1">
+                        <div className="h-4 bg-surface-container rounded w-full" />
+                        <div className="h-3 bg-surface-container rounded w-2/3" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : videos.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-gutter gap-y-xl">
+                {videos.map(video => (
                   <VideoCard key={video._id} video={video} />
                 ))}
               </div>
             ) : (
-              /* Empty state */
               <div className="flex flex-col items-center justify-center py-24 text-center">
                 <span className="material-symbols-outlined text-secondary text-[64px] mb-4">
                   search_off
