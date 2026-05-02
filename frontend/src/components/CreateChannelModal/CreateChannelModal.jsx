@@ -35,6 +35,7 @@ export default function CreateChannelModal({ onClose }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    // Start with a simple handle based on the channel name.
     if (!handleEdited && name.trim()) {
       setHandle(`@${slugify(name.trim())}-${randomSuffix()}`);
     }
@@ -48,6 +49,7 @@ export default function CreateChannelModal({ onClose }) {
   function handleHandleChange(e) {
     setHandleEdited(true);
     let val = e.target.value;
+    // Keep the handle format consistent even if the user skips the @ sign.
     if (!val.startsWith('@')) val = '@' + val.replace(/^@+/, '');
     setHandle(val);
     setError('');
@@ -70,6 +72,7 @@ export default function CreateChannelModal({ onClose }) {
 
     setSaving(true);
     try {
+      // Only keep the profile image URL if the preview already proved it works.
       const { data: channel } = await api.post('/channels', {
         channelName: trimmedName,
         handle: trimmedHandle,
@@ -92,6 +95,7 @@ export default function CreateChannelModal({ onClose }) {
   }
 
   function handleBackdropClick(e) {
+    // Close only when the user clicks outside the modal content.
     if (e.target === e.currentTarget) onClose();
   }
 

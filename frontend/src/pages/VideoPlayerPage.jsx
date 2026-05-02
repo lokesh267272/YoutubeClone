@@ -36,6 +36,7 @@ export default function VideoPlayerPage() {
   const [recFilter, setRecFilter] = useState('All');
 
   useEffect(() => {
+    // Fetch the current video and the recommendation list together.
     const controller = new AbortController();
     setLoading(true);
     setVideo(null);
@@ -57,12 +58,14 @@ export default function VideoPlayerPage() {
       .catch(err => { if (err.code !== 'ERR_CANCELED') setVideo(null); })
       .finally(() => setLoading(false));
 
+    // Cancel old requests if the user jumps to another video quickly.
     return () => controller.abort();
   }, [id]);
 
   async function handleLike() {
     if (!user) { navigate('/login'); return; }
     try {
+      // Update the local reaction state right after the API responds.
       const { data } = await api.put(`/videos/${id}/like`);
       setLikeCount(data.likes.length);
       setLiked(data.likes.map(String).includes(String(user._id)));
@@ -81,6 +84,7 @@ export default function VideoPlayerPage() {
   }
 
   function handleShare() {
+    // Show quick feedback after copying the current page link.
     navigator.clipboard.writeText(window.location.href).then(() => {
       setShareCopied(true);
       setTimeout(() => setShareCopied(false), 2000);
@@ -117,6 +121,7 @@ export default function VideoPlayerPage() {
   }
 
   const recommendations = allVideos.filter(v => v._id !== id);
+  // Keep the current video out of the recommendation rail.
   const filteredRecs = recFilter === 'All'
     ? recommendations
     : recommendations.filter(v => v.category === recFilter);

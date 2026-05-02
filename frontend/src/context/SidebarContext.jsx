@@ -3,9 +3,11 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const SidebarContext = createContext(null);
 
 export function SidebarProvider({ children }) {
+  // Desktop starts open, while smaller screens collapse by default.
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
 
   useEffect(() => {
+    // On smaller screens, default back to the collapsed sidebar.
     function handleResize() {
       if (window.innerWidth < 1024) setSidebarOpen(false);
     }

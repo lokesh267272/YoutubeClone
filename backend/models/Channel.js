@@ -10,8 +10,10 @@ const channelSchema = new mongoose.Schema(
     avatarBg:    { type: String, default: '#4d96ff' },
     initial:     { type: String, default: '' },
     links:       [{ type: String }],
+    // The owner links the channel back to the user who created it.
     owner:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     subscribers: { type: Number, default: 0 },
+    // Keep a simple list of uploaded video ids for the channel page.
     videos:      [{ type: mongoose.Schema.Types.ObjectId, ref: 'Video' }],
   },
   { timestamps: true }

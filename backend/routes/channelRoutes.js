@@ -4,6 +4,7 @@ import protect from '../middleware/authMiddleware.js';
 
 const router = Router();
 
+// Creating and editing a channel requires an authenticated user.
 router.post('/',    protect, createChannel);
 router.get('/:id',  getChannel);
 router.put('/:id',  protect, updateChannel);

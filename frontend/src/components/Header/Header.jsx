@@ -25,11 +25,13 @@ export default function Header({ onToggleSidebar, onSearch }) {
 
   function handleSearchSubmit(e) {
     e.preventDefault();
+    // Submit the cleaned search text so empty spaces do not create a query.
     onSearch(searchValue.trim());
   }
 
   function handleSearchChange(e) {
     const val = e.target.value;
+    // Keep the search responsive by pushing updates as the user types.
     setSearchValue(val);
     onSearch(val.trim());
   }
@@ -55,6 +57,7 @@ export default function Header({ onToggleSidebar, onSearch }) {
         <a
           href="/"
           className="flex items-center no-underline"
+          // Going home also clears any active search state in the parent page.
           onClick={(e) => { e.preventDefault(); navigate('/'); onSearch(''); }}
         >
           <img
@@ -129,6 +132,7 @@ export default function Header({ onToggleSidebar, onSearch }) {
         {user && (
           <button
             onClick={() => {
+              // Users need a channel before they can jump into upload flows.
               if (user.channelId) {
                 navigate(`/channel/${user.channelId}`);
               } else {
@@ -218,6 +222,7 @@ export default function Header({ onToggleSidebar, onSearch }) {
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
+          {/* Reuse the same search state here so desktop and mobile stay in sync. */}
           <form onSubmit={handleSearchSubmit} className="flex flex-1 items-center">
             <div className="flex flex-1 items-center border border-surface-variant rounded-l-full h-10 px-3 focus-within:border-secondary bg-surface-container-lowest">
               <input

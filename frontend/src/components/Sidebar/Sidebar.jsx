@@ -29,6 +29,7 @@ function NavLink({ icon, label, path, active, filled, showLabel }) {
   const navigate = useNavigate();
   return (
     <button
+      // The compact sidebar still uses the same links, just without text labels.
       onClick={() => navigate(path)}
       title={label}
       className={`
@@ -58,6 +59,7 @@ export default function Sidebar({ isOpen }) {
   const [createChannelOpen, setCreateChannelOpen] = useState(false);
 
   function goToChannel() {
+    // Open the channel when it exists, otherwise start the create-channel flow.
     if (user?.channelId) {
       navigate(`/channel/${user.channelId}`);
     } else {
@@ -85,6 +87,7 @@ export default function Sidebar({ isOpen }) {
           }
         `}
       >
+        {/* The sidebar switches between full and icon-only layouts based on screen state. */}
         {/* Main navigation */}
         <nav className="flex flex-col gap-0.5 w-full">
           {NAV_LINKS.map((link) => (

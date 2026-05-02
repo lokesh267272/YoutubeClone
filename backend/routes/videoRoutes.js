@@ -7,6 +7,7 @@ import protect from '../middleware/authMiddleware.js';
 
 const router = Router();
 
+// Read routes stay public, while mutations and reactions require auth.
 router.get('/',           getVideos);
 router.get('/:id',        getVideo);
 router.post('/',          protect, createVideo);

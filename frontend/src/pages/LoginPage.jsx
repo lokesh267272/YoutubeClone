@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import api from '../api/axios.js';
 
 function validate(fields) {
+  // Keep the login checks small and focused on required fields.
   const errors = {};
   if (!fields.email.trim()) {
     errors.email = 'Email is required.';
@@ -90,12 +91,14 @@ export default function LoginPage() {
   const [justRegistered] = useState(!!location.state?.registeredEmail);
 
   useEffect(() => {
+    // Skip the login page when the user already has a session.
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
   function handleChange(field) {
     return (e) => {
       setFields(prev => ({ ...prev, [field]: e.target.value }));
+      // Clear field-level errors as the user fixes them.
       if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
       setGlobalError('');
     };
@@ -106,6 +109,7 @@ export default function LoginPage() {
     const validationErrors = validate(fields);
     if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
 
+    // Only hit the API after the form passes local validation.
     setLoading(true);
     setGlobalError('');
     try {
@@ -123,6 +127,7 @@ export default function LoginPage() {
   }
 
   function fillDemo() {
+    // Prefill the public demo account for quick testing.
     setFields({ email: 'test@example.com', password: 'password123' });
     setErrors({});
     setGlobalError('');

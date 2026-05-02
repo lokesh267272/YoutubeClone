@@ -8,15 +8,18 @@ export default function VideoCard({ video }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   function handleCardClick() {
+    // Clicking the card opens the watch page for that video.
     navigate(`/watch/${video._id}`);
   }
 
   function handleChannelClick(e) {
+    // Stop the card click so avatar and channel name can navigate separately.
     e.stopPropagation();
     navigate(`/channel/${video.channelId}`);
   }
 
   function handleMenuClick(e) {
+    // Keep the overflow menu from triggering the card navigation.
     e.stopPropagation();
     setMenuOpen(prev => !prev);
   }
@@ -115,6 +118,7 @@ export default function VideoCard({ video }) {
           {menuOpen && (
             <div
               className="absolute right-0 top-7 w-48 bg-surface-container-lowest border border-surface-variant rounded-xl shadow-lg z-10 overflow-hidden"
+              // Prevent menu actions from bubbling up to the card click handler.
               onClick={e => e.stopPropagation()}
             >
               {[

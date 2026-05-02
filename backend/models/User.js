@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
     email:    { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
     avatarBg: { type: String, default: '#4d96ff' },
+    // This points to the user's channel once they create one.
     channelId:{ type: mongoose.Schema.Types.ObjectId, ref: 'Channel', default: null },
   },
   { timestamps: true }

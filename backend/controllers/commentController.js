@@ -2,6 +2,7 @@ import Comment from '../models/Comment.js';
 
 export const getComments = async (req, res) => {
   try {
+    // Newest comments show up first, matching the frontend list order.
     const comments = await Comment.find({ videoId: req.params.videoId }).sort({ createdAt: -1 });
     res.json(comments);
   } catch (err) {
@@ -14,6 +15,7 @@ export const addComment = async (req, res) => {
   if (!text || !text.trim()) return res.status(400).json({ message: 'Comment text is required' });
 
   try {
+    // Save both the user id and the current username for easier comment rendering.
     const comment = await Comment.create({
       videoId: req.params.videoId,
       userId: req.user.userId,
@@ -33,6 +35,7 @@ export const editComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) return res.status(404).json({ message: 'Comment not found' });
+    // Comment edits are limited to the original author.
     if (comment.userId.toString() !== req.user.userId)
       return res.status(403).json({ message: 'Not authorized' });
 
@@ -48,6 +51,7 @@ export const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) return res.status(404).json({ message: 'Comment not found' });
+    // Comment deletes follow the same ownership rule as edits.
     if (comment.userId.toString() !== req.user.userId)
       return res.status(403).json({ message: 'Not authorized' });
 

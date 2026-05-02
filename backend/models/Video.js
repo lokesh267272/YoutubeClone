@@ -7,6 +7,7 @@ const videoSchema = new mongoose.Schema(
     videoUrl:        { type: String, default: '' },
     description:     { type: String, default: '' },
     duration:        { type: String, default: '' },
+    // These fields link the video to its channel and uploader.
     channelId:       { type: mongoose.Schema.Types.ObjectId, ref: 'Channel', required: true },
     channelName:     { type: String, default: '' },
     channelAvatarBg:   { type: String, default: '#4d96ff' },
@@ -14,6 +15,7 @@ const videoSchema = new mongoose.Schema(
     channelProfileUrl: { type: String, default: '' },
     uploader:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     views:           { type: Number, default: 0 },
+    // Likes and dislikes track which users reacted to the video.
     likes:           [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     dislikes:        [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     category:        { type: String, default: 'Web Development' },

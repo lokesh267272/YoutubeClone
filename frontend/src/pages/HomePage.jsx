@@ -17,7 +17,9 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load the home feed again whenever the filters change.
     setLoading(true);
+    // Build the API query from the active search and category filters.
     const params = {};
     if (searchQuery) params.search = searchQuery;
     if (selectedCategory !== 'All') params.category = selectedCategory;
@@ -28,6 +30,7 @@ export default function HomePage() {
   }, [searchQuery, selectedCategory]);
 
   function handleSearch(query) {
+    // Searching resets the category so the results stay predictable.
     setSearchQuery(query);
     if (query) setSelectedCategory('All');
   }
@@ -64,7 +67,7 @@ export default function HomePage() {
             onCategoryChange={handleCategoryChange}
           />
 
-          {/* Video grid */}
+          {/* Show loading placeholders until the feed is ready. */}
           <div className="p-gutter md:p-lg pb-20 lg:pb-gutter">
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-gutter gap-y-xl">
@@ -83,6 +86,7 @@ export default function HomePage() {
               </div>
             ) : videos.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-gutter gap-y-xl">
+                {/* Render each video card from the fetched feed data. */}
                 {videos.map(video => (
                   <VideoCard key={video._id} video={video} />
                 ))}

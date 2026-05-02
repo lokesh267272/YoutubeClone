@@ -24,6 +24,7 @@ function CommentAvatar({ username, size = 'w-10 h-10' }) {
 }
 
 function CommentItem({ comment, currentUser, onEdit, onDelete }) {
+  // Extra menu actions only appear on comments owned by the current user.
   const isOwn = currentUser && String(comment.userId) === String(currentUser._id);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -114,6 +115,7 @@ export default function CommentSection({ videoId }) {
   const inputRef = useRef(null);
 
   useEffect(() => {
+    // Load comments again when the user switches to another video.
     setLoading(true);
     api.get(`/comments/${videoId}`)
       .then(({ data }) => setComments(data))
@@ -122,11 +124,13 @@ export default function CommentSection({ videoId }) {
   }, [videoId]);
 
   async function handleAddComment() {
+    // Send guests to login before allowing comment actions.
     if (!user) { navigate('/login'); return; }
     if (!newText.trim()) return;
     setSubmitting(true);
     try {
       const { data } = await api.post(`/comments/${videoId}`, { text: newText.trim() });
+      // Add the new comment to the top so it appears instantly.
       setComments(prev => [data, ...prev]);
       setNewText('');
       setInputFocused(false);
@@ -138,6 +142,7 @@ export default function CommentSection({ videoId }) {
     if (!editText.trim()) return;
     try {
       const { data } = await api.put(`/comments/${videoId}/${id}`, { text: editText.trim() });
+      // Replace just the edited comment instead of refetching the whole list.
       setComments(prev => prev.map(c => c._id === id ? data : c));
       setEditingId(null);
       setEditText('');
@@ -153,6 +158,7 @@ export default function CommentSection({ videoId }) {
   }
 
   function handleStartEdit(comment) {
+    // Prefill the textarea with the existing comment text.
     setEditingId(comment._id);
     setEditText(comment.text);
   }

@@ -36,6 +36,7 @@ export default function ChannelPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Pull the latest channel data when the route changes.
     setLoading(true);
     api.get(`/channels/${id}`)
       .then(({ data }) => {
@@ -46,9 +47,11 @@ export default function ChannelPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Owner checks decide whether to show edit and upload actions.
   const isOwner = !!(user && channel && String(channel.owner) === String(user._id));
 
   const sortedVideos = useMemo(() => {
+    // Sort a copied list so we never mutate React state directly.
     const v = [...videos];
     if (sortBy === "Latest") return v.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
     if (sortBy === "Popular") return v.sort((a, b) => b.views - a.views);
@@ -65,9 +68,11 @@ export default function ChannelPage() {
   }
 
   async function handleSaveVideo(form) {
+    // Use one save path for both new uploads and video edits.
     setSaving(true);
     try {
       if (videoModal.mode === "upload") {
+        // New uploads also copy channel details needed by the video card UI.
         const { data } = await api.post("/videos", {
           ...form,
           channelId: id,
@@ -78,6 +83,7 @@ export default function ChannelPage() {
         });
         setVideos(prev => [data, ...prev]);
       } else {
+        // Editing swaps only the changed video back into the list.
         const { data } = await api.put(`/videos/${videoModal.video._id}`, form);
         setVideos(prev => prev.map(v => v._id === videoModal.video._id ? data : v));
       }

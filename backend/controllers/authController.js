@@ -7,8 +7,9 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const register = async (req, res) => {
   const { username, email, password } = req.body;
 
+  // Keep the first layer of signup validation close to the request edge.
   if (!username || username.length < 3 || username.length > 20)
-    return res.status(400).json({ message: 'Username must be 3–20 characters' });
+    return res.status(400).json({ message: 'Username must be 3-20 characters' });
   if (!email || !emailRegex.test(email))
     return res.status(400).json({ message: 'Invalid email address' });
   if (!password || password.length < 6)
@@ -18,6 +19,7 @@ export const register = async (req, res) => {
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: 'Email already in use' });
 
+    // Store a hash instead of saving the raw password.
     const hashed = await bcrypt.hash(password, 10);
     await User.create({ username, email, password: hashed });
 
@@ -31,12 +33,14 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Look up the user first so we can return a clearer login error.
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'No account found with that email' });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Incorrect password' });
 
+    // Sign a short user payload that the frontend can send back on protected calls.
     const token = jwt.sign(
       { userId: user._id, username: user.username, email: user.email },
       process.env.JWT_SECRET,
@@ -60,6 +64,7 @@ export const login = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
+    // Never send the password hash back to the client.
     const user = await User.findById(req.user.userId).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user);

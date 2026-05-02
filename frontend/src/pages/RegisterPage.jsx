@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios.js';
 
 function validate(fields) {
+  // Check the main signup rules before sending anything to the server.
   const errors = {};
   if (!fields.username.trim()) {
     errors.username = 'Username is required.';
@@ -97,6 +98,7 @@ export default function RegisterPage() {
   function handleChange(field) {
     return (e) => {
       setFields(prev => ({ ...prev, [field]: e.target.value }));
+      // Drop stale errors once the user starts correcting a field.
       if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
       setGlobalError('');
     };
@@ -115,9 +117,11 @@ export default function RegisterPage() {
         email: fields.email.trim(),
         password: fields.password,
       });
+      // Show a quick success state before sending the user to sign in.
       setSuccess(true);
       setTimeout(() => navigate('/login', { state: { registeredEmail: fields.email.trim() } }), 1500);
     } catch (err) {
+      // Push backend conflicts to the matching field when possible.
       const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
       if (msg.toLowerCase().includes('email')) setErrors({ email: msg });
       else if (msg.toLowerCase().includes('username')) setErrors({ username: msg });
@@ -234,4 +238,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-

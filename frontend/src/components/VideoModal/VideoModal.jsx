@@ -3,6 +3,7 @@ import { CATEGORIES } from "../../data/categories.js";
 
 export default function VideoModal({ mode, video, onClose, onSave, saving }) {
   const [form, setForm] = useState(
+    // Reuse the same form for both creating a video and editing an existing one.
     video
       ? { title: video.title, description: video.description, thumbnailUrl: video.thumbnailUrl, videoUrl: video.videoUrl, category: video.category }
       : { title: "", description: "", thumbnailUrl: "", videoUrl: "", category: CATEGORIES[1] },
@@ -10,6 +11,7 @@ export default function VideoModal({ mode, video, onClose, onSave, saving }) {
   const [errors, setErrors] = useState({});
 
   function validate() {
+    // Keep validation minimal here and let the backend handle deeper checks.
     const e = {};
     if (!form.title.trim()) e.title = "Title is required";
     if (!form.videoUrl.trim()) e.videoUrl = "Video URL is required";
@@ -20,10 +22,12 @@ export default function VideoModal({ mode, video, onClose, onSave, saving }) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
+    // Pass the cleaned form state back to the parent save handler.
     onSave(form);
   }
 
   function set(key, val) {
+    // Update one field at a time and clear its old error immediately.
     setForm(p => ({ ...p, [key]: val }));
     if (errors[key]) setErrors(p => ({ ...p, [key]: undefined }));
   }
@@ -131,6 +135,7 @@ export default function VideoModal({ mode, video, onClose, onSave, saving }) {
               onChange={e => set("category", e.target.value)}
               className={`${inputNormal} cursor-pointer`}
             >
+              {/* The filter-only "All" option should not be saved on a video. */}
               {CATEGORIES.filter(c => c !== "All").map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
               ))}
