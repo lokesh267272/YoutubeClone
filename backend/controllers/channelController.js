@@ -42,10 +42,25 @@ export const updateChannel = async (req, res) => {
     if (channel.owner.toString() !== req.user.userId)
       return res.status(403).json({ message: 'Not authorized' });
 
-    const { channelName, description, bannerUrl } = req.body;
-    Object.assign(channel, { channelName, description, bannerUrl });
-    await channel.save();
+    const { channelName, handle, description, bannerUrl, profileUrl, avatarBg, links } = req.body;
 
+    if (handle && handle !== channel.handle) {
+      const taken = await Channel.findOne({ handle, _id: { $ne: channel._id } });
+      if (taken) return res.status(400).json({ message: 'Handle already taken' });
+      channel.handle = handle;
+    }
+
+    if (channelName !== undefined) {
+      channel.channelName = channelName;
+      channel.initial = channelName.trim() ? channelName.trim()[0].toUpperCase() : channel.initial;
+    }
+    if (description !== undefined) channel.description = description;
+    if (bannerUrl !== undefined) channel.bannerUrl = bannerUrl;
+    if (profileUrl !== undefined) channel.profileUrl = profileUrl;
+    if (avatarBg !== undefined) channel.avatarBg = avatarBg;
+    if (links !== undefined) channel.links = links;
+
+    await channel.save();
     res.json(channel);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
