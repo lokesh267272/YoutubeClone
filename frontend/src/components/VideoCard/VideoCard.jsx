@@ -69,9 +69,9 @@ export default function VideoCard({ video }) {
           style={{ backgroundColor: video.channelAvatarBg || '#e4e2e2' }}
           aria-label={`Visit ${video.channelName} channel`}
         >
-          {video.channelAvatar ? (
+          {video.channelProfileUrl ? (
             <img
-              src={video.channelAvatar}
+              src={video.channelProfileUrl}
               alt={video.channelName}
               className="w-full h-full object-cover"
             />

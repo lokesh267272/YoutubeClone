@@ -54,18 +54,14 @@ export default function Header({ onToggleSidebar, onSearch }) {
 
         <a
           href="/"
-          className="flex items-center gap-1 tracking-tighter no-underline"
+          className="flex items-center no-underline"
           onClick={(e) => { e.preventDefault(); navigate('/'); onSearch(''); }}
         >
-          <span
-            className="material-symbols-outlined text-primary filled text-[28px]"
-            style={{ fontVariationSettings: '"FILL" 1' }}
-          >
-            play_circle
-          </span>
-          <span className="text-headline-md font-headline-md text-on-surface hidden sm:block">
-            YouTube
-          </span>
+          <img
+            src="/YouTube_Logo_2017.svg.png"
+            alt="YouTube"
+            className="h-5 w-auto"
+          />
         </a>
       </div>
 
