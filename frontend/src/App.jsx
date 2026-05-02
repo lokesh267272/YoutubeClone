@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -8,10 +7,11 @@ import ChannelPage from './pages/ChannelPage.jsx';
 import Header from './components/Header/Header.jsx';
 import Sidebar from './components/Sidebar/Sidebar.jsx';
 import BottomNav from './components/BottomNav/BottomNav.jsx';
+import { useSidebar } from './context/SidebarContext.jsx';
 
 function ComingSoonPage() {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+  const { sidebarOpen, setSidebarOpen } = useSidebar();
 
   return (
     <div className="min-h-screen bg-surface-container-lowest flex flex-col">
