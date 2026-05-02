@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import CommentSection from '../components/CommentSection/CommentSection.jsx';
-import { mockVideos, formatViews, formatDate } from '../data/mockData.js';
+import { formatViews, formatDate } from '../data/mockData.js';
+import api from '../api/axios.js';
 
 /* ─────────────────────────── helpers ─────────────────────────── */
 function formatLikes(n) {
@@ -23,7 +24,6 @@ function RecommendedVideoCard({ video }) {
       className="flex gap-2 group cursor-pointer"
       onClick={() => { navigate(`/watch/${video._id}`); window.scrollTo(0, 0); }}
     >
-      {/* Thumbnail */}
       <div className="w-[168px] h-[94px] flex-shrink-0 rounded-lg overflow-hidden relative border border-surface-variant bg-surface-container-low">
         {imgErr ? (
           <div className="w-full h-full flex items-center justify-center bg-surface-container-high">
@@ -45,7 +45,6 @@ function RecommendedVideoCard({ video }) {
         )}
       </div>
 
-      {/* Info */}
       <div className="flex flex-col flex-1 min-w-0 pr-1">
         <h3 className="text-body-md font-medium text-on-surface line-clamp-2 leading-snug group-hover:text-primary transition-colors">
           {video.title}
@@ -94,27 +93,83 @@ export default function VideoPlayerPage() {
   const { user } = useAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [video, setVideo] = useState(null);
+  const [allVideos, setAllVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const video = mockVideos.find(v => v._id === id);
-
-  /* ── like / dislike ── */
-  const baseLikes = Math.max(Math.floor((video?.views || 10000) * 0.06), 500);
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
-  const [likeCount, setLikeCount] = useState(baseLikes);
+  const [likeCount, setLikeCount] = useState(0);
 
-  /* ── subscribe ── */
   const [subscribed, setSubscribed] = useState(false);
-
-  /* ── description expand ── */
   const [descExpanded, setDescExpanded] = useState(false);
-
-  /* ── share ── */
   const [shareCopied, setShareCopied] = useState(false);
-
-  /* ── recommendations filter ── */
   const [recFilter, setRecFilter] = useState('All');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setVideo(null);
+
+    Promise.all([
+      api.get(`/videos/${id}`, { signal: controller.signal }),
+      api.get('/videos', { signal: controller.signal }),
+    ])
+      .then(([videoRes, allRes]) => {
+        const v = videoRes.data;
+        setVideo(v);
+        setAllVideos(allRes.data);
+        setLikeCount(v.likes.length);
+        if (user) {
+          setLiked(v.likes.map(String).includes(String(user._id)));
+          setDisliked(v.dislikes.map(String).includes(String(user._id)));
+        }
+      })
+      .catch(err => {
+        if (err.code !== 'ERR_CANCELED') setVideo(null);
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [id]);
+
+  async function handleLike() {
+    if (!user) { navigate('/login'); return; }
+    try {
+      const { data } = await api.put(`/videos/${id}/like`);
+      setLikeCount(data.likes.length);
+      setLiked(data.likes.map(String).includes(String(user._id)));
+      setDisliked(data.dislikes.map(String).includes(String(user._id)));
+    } catch { /* ignore */ }
+  }
+
+  async function handleDislike() {
+    if (!user) { navigate('/login'); return; }
+    try {
+      const { data } = await api.put(`/videos/${id}/dislike`);
+      setLikeCount(data.likes.length);
+      setLiked(data.likes.map(String).includes(String(user._id)));
+      setDisliked(data.dislikes.map(String).includes(String(user._id)));
+    } catch { /* ignore */ }
+  }
+
+  function handleShare() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    });
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header onToggleSidebar={() => {}} onSearch={() => {}} />
+        <div className="flex flex-col items-center justify-center flex-1 gap-4">
+          <span className="w-10 h-10 border-4 border-surface-variant border-t-primary rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   if (!video) {
     return (
@@ -134,44 +189,19 @@ export default function VideoPlayerPage() {
     );
   }
 
-  const recommendations = mockVideos.filter(v => v._id !== id);
+  const recommendations = allVideos.filter(v => v._id !== id);
   const filteredRecs = recFilter === 'All'
     ? recommendations
     : recFilter === `From ${video.channelName}`
       ? recommendations.filter(v => v.channelName === video.channelName)
       : recommendations.filter(v => v.category === recFilter);
 
-  function handleLike() {
-    if (!user) { navigate('/login'); return; }
-    if (liked) { setLiked(false); setLikeCount(c => c - 1); }
-    else {
-      setLiked(true); setLikeCount(c => c + 1);
-      if (disliked) setDisliked(false);
-    }
-  }
-
-  function handleShare() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2000);
-    });
-  }
-
-  function handleDislike() {
-    if (!user) { navigate('/login'); return; }
-    if (disliked) { setDisliked(false); }
-    else {
-      setDisliked(true);
-      if (liked) { setLiked(false); setLikeCount(c => c - 1); }
-    }
-  }
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* ── Header ── */}
       <Header
         onToggleSidebar={() => setSidebarOpen(p => !p)}
-        onSearch={q => { setSearchQuery(q); if (q) navigate(`/?search=${q}`); }}
+        onSearch={q => { if (q) navigate(`/?search=${q}`); }}
       />
 
       {/* ── Body ── */}
@@ -192,8 +222,9 @@ export default function VideoPlayerPage() {
               src={video.videoUrl}
               poster={video.thumbnailUrl}
               controls
+              autoPlay
               controlsList="nodownload"
-              preload="metadata"
+              preload="auto"
             />
           </div>
 
@@ -209,7 +240,6 @@ export default function VideoPlayerPage() {
 
             {/* Channel info + Subscribe */}
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Avatar */}
               <button
                 onClick={() => navigate(`/channel/${video.channelId}`)}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0 hover:opacity-90 transition-opacity"
@@ -218,7 +248,6 @@ export default function VideoPlayerPage() {
                 {video.channelInitial}
               </button>
 
-              {/* Name + subs */}
               <button
                 onClick={() => navigate(`/channel/${video.channelId}`)}
                 className="text-left"
@@ -232,7 +261,6 @@ export default function VideoPlayerPage() {
                 </div>
               </button>
 
-              {/* Subscribe button */}
               <button
                 onClick={() => setSubscribed(p => !p)}
                 className={`
@@ -310,7 +338,6 @@ export default function VideoPlayerPage() {
             className="mt-4 p-4 bg-surface-container-low rounded-xl border border-surface-variant hover:bg-surface-variant/50 transition-colors cursor-pointer"
             onClick={() => setDescExpanded(p => !p)}
           >
-            {/* Meta row */}
             <div className="flex gap-2 text-title-sm font-title-sm text-on-surface mb-2 flex-wrap">
               <span>{formatViews(video.views)}</span>
               <span>•</span>
@@ -320,7 +347,6 @@ export default function VideoPlayerPage() {
               </span>
             </div>
 
-            {/* Description text */}
             <p className={`text-body-md text-on-surface whitespace-pre-wrap ${!descExpanded ? 'line-clamp-3' : ''}`}>
               {video.description}
               {descExpanded && (
