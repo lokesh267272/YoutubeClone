@@ -5,6 +5,7 @@ import Header from "../components/Header/Header.jsx";
 import Sidebar from "../components/Sidebar/Sidebar.jsx";
 import ChannelVideoCard from "../components/ChannelVideoCard/ChannelVideoCard.jsx";
 import VideoModal from "../components/VideoModal/VideoModal.jsx";
+import BottomNav from "../components/BottomNav/BottomNav.jsx";
 import api from "../api/axios.js";
 
 const TABS = ["Home", "Videos", "Shorts", "Live", "Playlists", "Posts", "Store"];
@@ -118,7 +119,7 @@ export default function ChannelPage() {
       <div className="flex flex-1 relative">
         <Sidebar isOpen={sidebarOpen} />
 
-        <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? "md:ml-60" : "md:ml-0"}`}>
+        <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? "md:ml-0 lg:ml-60" : "md:ml-16 lg:ml-0"}`}>
 
           {/* ── Banner ── */}
           <div className="px-3 sm:px-4 md:px-6 pt-3 sm:pt-4">
@@ -240,7 +241,7 @@ export default function ChannelPage() {
           </div>
 
           {/* ── Tab Content ── */}
-          <div className="px-4 md:px-8 lg:px-10 py-6">
+          <div className="px-4 md:px-8 lg:px-10 py-6 pb-20 lg:pb-6">
             {activeTab === "Videos" ? (
               <>
                 <div className="flex items-center gap-2 mb-6 flex-wrap">
@@ -306,6 +307,8 @@ export default function ChannelPage() {
           saving={saving}
         />
       )}
+
+      <BottomNav />
     </div>
   );
 }

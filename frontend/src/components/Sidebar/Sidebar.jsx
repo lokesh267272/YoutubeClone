@@ -25,13 +25,15 @@ const EXPLORE_LINKS = [
   { icon: 'school', label: 'Courses', path: '/courses' },
 ];
 
-function NavLink({ icon, label, path, active, filled }) {
+function NavLink({ icon, label, path, active, filled, showLabel }) {
   const navigate = useNavigate();
   return (
     <button
       onClick={() => navigate(path)}
+      title={label}
       className={`
-        w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-150 text-left
+        w-full flex items-center py-2.5 rounded-lg transition-all duration-150 text-left
+        ${showLabel ? 'gap-4 px-3' : 'justify-center px-0'}
         ${active
           ? 'bg-surface-variant text-on-surface font-title-sm text-title-sm'
           : 'text-on-surface hover:bg-surface-variant text-body-md font-body-md'
@@ -44,7 +46,7 @@ function NavLink({ icon, label, path, active, filled }) {
       >
         {icon}
       </span>
-      <span className="truncate">{label}</span>
+      {showLabel && <span className="truncate">{label}</span>}
     </button>
   );
 }
@@ -65,19 +67,22 @@ export default function Sidebar({ isOpen }) {
 
   return (
     <>
-      {/* Backdrop for mobile */}
+      {/* Backdrop for mobile and tablet overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/30 z-30 md:hidden" />
+        <div className="fixed inset-0 bg-black/30 z-30 lg:hidden" />
       )}
 
       <aside
         className={`
-          fixed left-0 top-14 h-[calc(100vh-56px)] w-60
+          fixed left-0 top-14 h-[calc(100vh-56px)]
           bg-surface-container-lowest z-40
-          flex flex-col pt-3 pb-6 px-3
+          flex flex-col pt-3 pb-6
           overflow-y-auto custom-scrollbar
-          transition-transform duration-300 ease-in-out
-          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          transition-all duration-300 ease-in-out
+          ${isOpen
+            ? 'translate-x-0 w-60 px-3'
+            : '-translate-x-full w-60 md:translate-x-0 md:w-16 md:px-2 lg:-translate-x-full lg:w-60'
+          }
         `}
       >
         {/* Main navigation */}
@@ -88,23 +93,28 @@ export default function Sidebar({ isOpen }) {
               {...link}
               active={location.pathname === link.path}
               filled
+              showLabel={isOpen}
             />
           ))}
         </nav>
 
-        <hr className="border-surface-variant my-3 mx-0" />
+        {isOpen && <hr className="border-surface-variant my-3 mx-0" />}
+        {!isOpen && <hr className="border-surface-variant my-3 mx-2 md:mx-1" />}
 
         {/* Explore section */}
         <div>
-          <h3 className="text-title-sm font-title-sm text-on-surface px-3 mb-1">
-            Explore
-          </h3>
+          {isOpen && (
+            <h3 className="text-title-sm font-title-sm text-on-surface px-3 mb-1">
+              Explore
+            </h3>
+          )}
           <nav className="flex flex-col gap-0.5">
             {EXPLORE_LINKS.map((link) => (
               <NavLink
                 key={link.path}
                 {...link}
                 active={false}
+                showLabel={isOpen}
               />
             ))}
           </nav>
@@ -113,30 +123,37 @@ export default function Sidebar({ isOpen }) {
         {/* Auth-only section */}
         {user && (
           <>
-            <hr className="border-surface-variant my-3 mx-0" />
+            {isOpen && <hr className="border-surface-variant my-3 mx-0" />}
+            {!isOpen && <hr className="border-surface-variant my-3 mx-2 md:mx-1" />}
             <div>
-              <h3 className="text-title-sm font-title-sm text-on-surface px-3 mb-1">
-                Your content
-              </h3>
+              {isOpen && (
+                <h3 className="text-title-sm font-title-sm text-on-surface px-3 mb-1">
+                  Your content
+                </h3>
+              )}
               <nav className="flex flex-col gap-0.5">
                 <button
                   onClick={goToChannel}
-                  className="w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md"
+                  title={user?.channelId ? 'Your channel' : 'Create channel'}
+                  className={`w-full flex items-center py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md ${isOpen ? 'gap-4 px-3' : 'justify-center px-0'}`}
                 >
                   <span className="material-symbols-outlined flex-shrink-0">
                     {user?.channelId ? 'manage_accounts' : 'add_circle'}
                   </span>
-                  <span className="truncate">
-                    {user?.channelId ? 'Your channel' : 'Create channel'}
-                  </span>
+                  {isOpen && (
+                    <span className="truncate">
+                      {user?.channelId ? 'Your channel' : 'Create channel'}
+                    </span>
+                  )}
                 </button>
                 {user?.channelId && (
                   <button
                     onClick={() => navigate(`/channel/${user.channelId}`)}
-                    className="w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md"
+                    title="Upload video"
+                    className={`w-full flex items-center py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md ${isOpen ? 'gap-4 px-3' : 'justify-center px-0'}`}
                   >
                     <span className="material-symbols-outlined flex-shrink-0">upload</span>
-                    <span className="truncate">Upload video</span>
+                    {isOpen && <span className="truncate">Upload video</span>}
                   </button>
                 )}
               </nav>
@@ -145,11 +162,13 @@ export default function Sidebar({ isOpen }) {
         )}
 
         {/* Footer */}
-        <div className="mt-auto pt-4 px-3">
-          <p className="text-body-sm text-secondary leading-relaxed">
-            © 2026 YouTube Clone
-          </p>
-        </div>
+        {isOpen && (
+          <div className="mt-auto pt-4 px-3">
+            <p className="text-body-sm text-secondary leading-relaxed">
+              © 2026 YouTube Clone
+            </p>
+          </div>
+        )}
       </aside>
 
       {createChannelOpen && (

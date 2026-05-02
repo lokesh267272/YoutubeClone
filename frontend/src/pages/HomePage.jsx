@@ -4,24 +4,20 @@ import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import FilterBar from '../components/FilterBar/FilterBar.jsx';
 import VideoCard from '../components/VideoCard/VideoCard.jsx';
+import BottomNav from '../components/BottomNav/BottomNav.jsx';
 import api from '../api/axios.js';
 
 export default function HomePage() {
   const [searchParams] = useSearchParams();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) setSidebarOpen(false);
-  }, []);
-
-  useEffect(() => {
     function handleResize() {
-      if (window.innerWidth < 768) setSidebarOpen(false);
+      if (window.innerWidth < 1024) setSidebarOpen(false);
     }
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -66,7 +62,7 @@ export default function HomePage() {
         <main
           className={`
             flex-1 min-w-0 transition-all duration-300
-            ${sidebarOpen ? 'md:ml-60' : 'md:ml-0'}
+            ${sidebarOpen ? 'md:ml-0 lg:ml-60' : 'md:ml-16 lg:ml-0'}
           `}
         >
           {/* Category filter bar */}
@@ -76,7 +72,7 @@ export default function HomePage() {
           />
 
           {/* Video grid */}
-          <div className="p-gutter md:p-lg">
+          <div className="p-gutter md:p-lg pb-20 lg:pb-gutter">
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-gutter gap-y-xl">
                 {Array.from({ length: 12 }).map((_, i) => (
@@ -123,6 +119,8 @@ export default function HomePage() {
           </div>
         </main>
       </div>
+
+      <BottomNav />
     </div>
   );
 }

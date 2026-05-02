@@ -130,7 +130,7 @@ export default function VideoPlayerPage() {
       <div className="flex flex-1 relative">
         <Sidebar isOpen={sidebarOpen} />
 
-        <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? 'md:ml-60' : 'md:ml-0'}`}>
+        <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? 'md:ml-0 lg:ml-60' : 'md:ml-16 lg:ml-0'}`}>
           <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:flex-row gap-6 p-4 lg:p-6 pb-24 lg:pb-8">
 
             {/* ── Left: Video + Info ── */}
