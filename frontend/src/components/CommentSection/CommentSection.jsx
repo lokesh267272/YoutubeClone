@@ -181,6 +181,7 @@ export default function CommentSection({ videoId }) {
   const inputRef = useRef(null);
 
   async function handleAddComment() {
+    if (!user) { navigate('/login'); return; }
     if (!newText.trim()) return;
     setSubmitting(true);
     await new Promise(r => setTimeout(r, 400));

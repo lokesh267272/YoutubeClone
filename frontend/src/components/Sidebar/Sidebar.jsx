@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import CreateChannelModal from '../CreateChannelModal.jsx';
 
 const NAV_LINKS = [
   { icon: 'home', label: 'Home', path: '/' },
@@ -51,6 +53,15 @@ export default function Sidebar({ isOpen }) {
   const location = useLocation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [createChannelOpen, setCreateChannelOpen] = useState(false);
+
+  function goToChannel() {
+    if (user?.channelId) {
+      navigate(`/channel/${user.channelId}`);
+    } else {
+      setCreateChannelOpen(true);
+    }
+  }
 
   return (
     <>
@@ -109,19 +120,25 @@ export default function Sidebar({ isOpen }) {
               </h3>
               <nav className="flex flex-col gap-0.5">
                 <button
-                  onClick={() => navigate(`/channel/${user.channelId || 'my'}`)}
+                  onClick={goToChannel}
                   className="w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md"
                 >
-                  <span className="material-symbols-outlined flex-shrink-0">manage_accounts</span>
-                  <span className="truncate">Your channel</span>
+                  <span className="material-symbols-outlined flex-shrink-0">
+                    {user?.channelId ? 'manage_accounts' : 'add_circle'}
+                  </span>
+                  <span className="truncate">
+                    {user?.channelId ? 'Your channel' : 'Create channel'}
+                  </span>
                 </button>
-                <button
-                  onClick={() => navigate('/upload')}
-                  className="w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md"
-                >
-                  <span className="material-symbols-outlined flex-shrink-0">upload</span>
-                  <span className="truncate">Upload video</span>
-                </button>
+                {user?.channelId && (
+                  <button
+                    onClick={() => navigate(`/channel/${user.channelId}`)}
+                    className="w-full flex items-center gap-4 px-3 py-2.5 rounded-lg transition-all duration-150 text-left text-on-surface hover:bg-surface-variant text-body-md font-body-md"
+                  >
+                    <span className="material-symbols-outlined flex-shrink-0">upload</span>
+                    <span className="truncate">Upload video</span>
+                  </button>
+                )}
               </nav>
             </div>
           </>
@@ -134,6 +151,10 @@ export default function Sidebar({ isOpen }) {
           </p>
         </div>
       </aside>
+
+      {createChannelOpen && (
+        <CreateChannelModal onClose={() => setCreateChannelOpen(false)} />
+      )}
     </>
   );
 }

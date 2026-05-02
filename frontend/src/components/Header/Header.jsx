@@ -130,9 +130,22 @@ export default function Header({ onToggleSidebar, onSearch }) {
         </button>
 
         {/* Create video (desktop only) */}
-        <button className="hidden md:flex p-2 hover:bg-surface-variant rounded-full transition-colors items-center justify-center">
-          <span className="material-symbols-outlined text-on-surface">video_call</span>
-        </button>
+        {user && (
+          <button
+            onClick={() => {
+              if (user.channelId) {
+                navigate(`/channel/${user.channelId}`);
+              } else {
+                setCreateChannelOpen(true);
+              }
+            }}
+            className="hidden md:flex p-2 hover:bg-surface-variant rounded-full transition-colors items-center justify-center"
+            aria-label="Upload video"
+            title={user.channelId ? 'Go to your channel to upload' : 'Create a channel to upload'}
+          >
+            <span className="material-symbols-outlined text-on-surface">video_call</span>
+          </button>
+        )}
 
         {/* Notifications */}
         <button className="relative p-2 hover:bg-surface-variant rounded-full transition-colors flex items-center justify-center">

@@ -110,6 +110,9 @@ export default function VideoPlayerPage() {
   /* ── description expand ── */
   const [descExpanded, setDescExpanded] = useState(false);
 
+  /* ── share ── */
+  const [shareCopied, setShareCopied] = useState(false);
+
   /* ── recommendations filter ── */
   const [recFilter, setRecFilter] = useState('All');
 
@@ -134,7 +137,9 @@ export default function VideoPlayerPage() {
   const recommendations = mockVideos.filter(v => v._id !== id);
   const filteredRecs = recFilter === 'All'
     ? recommendations
-    : recommendations.filter(v => v.channelName === video.channelName || v.category === video.category);
+    : recFilter === `From ${video.channelName}`
+      ? recommendations.filter(v => v.channelName === video.channelName)
+      : recommendations.filter(v => v.category === recFilter);
 
   function handleLike() {
     if (!user) { navigate('/login'); return; }
@@ -143,6 +148,13 @@ export default function VideoPlayerPage() {
       setLiked(true); setLikeCount(c => c + 1);
       if (disliked) setDisliked(false);
     }
+  }
+
+  function handleShare() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    });
   }
 
   function handleDislike() {
@@ -168,7 +180,7 @@ export default function VideoPlayerPage() {
 
       {/* ── Main ── */}
       <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? 'md:ml-60' : 'md:ml-0'}`}>
-      <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:flex-row gap-6 p-4 lg:p-6 pb-20 lg:pb-8">
+      <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:flex-row gap-6 p-4 lg:p-6 pb-24 lg:pb-8">
 
         {/* ══════ LEFT: Primary content ══════ */}
         <div className="flex-1 min-w-0">
@@ -268,9 +280,16 @@ export default function VideoPlayerPage() {
               </div>
 
               {/* Share */}
-              <button className="flex items-center gap-2 px-4 h-9 bg-surface-container-low hover:bg-surface-variant rounded-full transition-colors border border-surface-variant whitespace-nowrap flex-shrink-0">
-                <span className="material-symbols-outlined text-[20px]">share</span>
-                <span className="text-label-md font-label-md">Share</span>
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 h-9 bg-surface-container-low hover:bg-surface-variant rounded-full transition-colors border border-surface-variant whitespace-nowrap flex-shrink-0"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {shareCopied ? 'check' : 'share'}
+                </span>
+                <span className="text-label-md font-label-md">
+                  {shareCopied ? 'Copied!' : 'Share'}
+                </span>
               </button>
 
               {/* Download (desktop) */}
@@ -333,12 +352,10 @@ export default function VideoPlayerPage() {
             {['All', `From ${video.channelName}`, video.category].map(chip => (
               <button
                 key={chip}
-                onClick={() => setRecFilter(chip === `From ${video.channelName}` || chip === video.category ? chip : 'All')}
+                onClick={() => setRecFilter(chip)}
                 className={`
                   px-3 py-1.5 rounded-lg text-label-md font-label-md whitespace-nowrap flex-shrink-0 transition-colors
-                  ${chip === 'All' && recFilter === 'All'
-                    ? 'bg-on-surface text-surface-container-lowest'
-                    : chip !== 'All' && recFilter !== 'All'
+                  ${recFilter === chip
                     ? 'bg-on-surface text-surface-container-lowest'
                     : 'bg-surface-container-low border border-surface-variant text-on-surface hover:bg-surface-variant'
                   }

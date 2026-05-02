@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import FilterBar from '../components/FilterBar/FilterBar.jsx';
@@ -6,8 +7,9 @@ import VideoCard from '../components/VideoCard/VideoCard.jsx';
 import { mockVideos } from '../data/mockData.js';
 
 export default function HomePage() {
+  const [searchParams] = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   // Close sidebar on mobile by default
