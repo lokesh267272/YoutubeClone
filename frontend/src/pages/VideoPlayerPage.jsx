@@ -4,90 +4,19 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Header from '../components/Header/Header.jsx';
 import Sidebar from '../components/Sidebar/Sidebar.jsx';
 import CommentSection from '../components/CommentSection/CommentSection.jsx';
-import { formatViews, formatDate } from '../data/mockData.js';
+import RecommendedVideoCard from '../components/RecommendedVideoCard/RecommendedVideoCard.jsx';
+import BottomNav from '../components/BottomNav/BottomNav.jsx';
+import VideoActions from '../components/VideoActions/VideoActions.jsx';
+import VideoDescription from '../components/VideoDescription/VideoDescription.jsx';
 import { CATEGORIES } from '../data/categories.js';
 import api from '../api/axios.js';
 
-/* ─────────────────────────── helpers ─────────────────────────── */
-function formatLikes(n) {
+function formatCount(n) {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
 }
 
-/* ─────────────────────── RecommendedVideoCard ─────────────────── */
-function RecommendedVideoCard({ video }) {
-  const navigate = useNavigate();
-  const [imgErr, setImgErr] = useState(false);
-
-  return (
-    <div
-      className="flex gap-2 group cursor-pointer"
-      onClick={() => { navigate(`/watch/${video._id}`); window.scrollTo(0, 0); }}
-    >
-      <div className="w-[168px] h-[94px] flex-shrink-0 rounded-lg overflow-hidden relative border border-surface-variant bg-surface-container-low">
-        {imgErr ? (
-          <div className="w-full h-full flex items-center justify-center bg-surface-container-high">
-            <span className="material-symbols-outlined text-secondary text-[32px]">play_circle</span>
-          </div>
-        ) : (
-          <img
-            src={video.thumbnailUrl}
-            alt={video.title}
-            onError={() => setImgErr(true)}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-          />
-        )}
-        {video.duration && (
-          <span className="absolute bottom-1 right-1 bg-black/80 text-white text-[10px] font-medium px-1 py-0.5 rounded">
-            {video.duration}
-          </span>
-        )}
-      </div>
-
-      <div className="flex flex-col flex-1 min-w-0 pr-1">
-        <h3 className="text-body-md font-medium text-on-surface line-clamp-2 leading-snug group-hover:text-primary transition-colors">
-          {video.title}
-        </h3>
-        <span className="text-body-sm text-secondary mt-1 truncate">{video.channelName}</span>
-        <div className="text-body-sm text-secondary flex items-center gap-1">
-          <span>{formatViews(video.views)}</span>
-          <span>•</span>
-          <span>{formatDate(video.uploadDate)}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ──────────────────────── BottomNav (mobile) ──────────────────── */
-function BottomNav() {
-  const navigate = useNavigate();
-  const items = [
-    { icon: 'home', label: 'Home', path: '/' },
-    { icon: 'play_circle', label: 'Shorts', path: '/shorts' },
-    { icon: 'subscriptions', label: 'Subscriptions', path: '/subscriptions' },
-    { icon: 'account_circle', label: 'You', path: '/you' },
-  ];
-
-  return (
-    <nav className="fixed bottom-0 w-full lg:hidden flex justify-around items-center h-14 bg-surface-container-lowest/95 backdrop-blur-md border-t border-surface-variant z-50">
-      {items.map(item => (
-        <button
-          key={item.label}
-          onClick={() => navigate(item.path)}
-          className="flex flex-col items-center justify-center gap-0.5 text-secondary hover:text-on-surface transition-colors w-full h-full active:bg-surface-container"
-        >
-          <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
-          <span className="text-[10px] font-medium">{item.label}</span>
-        </button>
-      ))}
-    </nav>
-  );
-}
-
-/* ───────────────────────── VideoPlayerPage ────────────────────── */
 export default function VideoPlayerPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -101,9 +30,7 @@ export default function VideoPlayerPage() {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-
   const [subscribed, setSubscribed] = useState(false);
-  const [descExpanded, setDescExpanded] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [recFilter, setRecFilter] = useState('All');
 
@@ -126,9 +53,7 @@ export default function VideoPlayerPage() {
           setDisliked(v.dislikes.map(String).includes(String(user._id)));
         }
       })
-      .catch(err => {
-        if (err.code !== 'ERR_CANCELED') setVideo(null);
-      })
+      .catch(err => { if (err.code !== 'ERR_CANCELED') setVideo(null); })
       .finally(() => setLoading(false));
 
     return () => controller.abort();
@@ -165,7 +90,7 @@ export default function VideoPlayerPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header onToggleSidebar={() => {}} onSearch={() => {}} />
-        <div className="flex flex-col items-center justify-center flex-1 gap-4">
+        <div className="flex items-center justify-center flex-1">
           <span className="w-10 h-10 border-4 border-surface-variant border-t-primary rounded-full animate-spin" />
         </div>
       </div>
@@ -197,216 +122,110 @@ export default function VideoPlayerPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* ── Header ── */}
       <Header
         onToggleSidebar={() => setSidebarOpen(p => !p)}
         onSearch={q => { if (q) navigate(`/?search=${q}`); }}
       />
 
-      {/* ── Body ── */}
       <div className="flex flex-1 relative">
         <Sidebar isOpen={sidebarOpen} />
 
-      {/* ── Main ── */}
-      <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? 'md:ml-60' : 'md:ml-0'}`}>
-      <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:flex-row gap-6 p-4 lg:p-6 pb-24 lg:pb-8">
+        <main className={`flex-1 min-w-0 transition-all duration-300 ${sidebarOpen ? 'md:ml-60' : 'md:ml-0'}`}>
+          <div className="max-w-[1800px] mx-auto w-full flex flex-col lg:flex-row gap-6 p-4 lg:p-6 pb-24 lg:pb-8">
 
-        {/* ══════ LEFT: Primary content ══════ */}
-        <div className="flex-1 min-w-0">
+            {/* ── Left: Video + Info ── */}
+            <div className="flex-1 min-w-0">
 
-          {/* Video Player */}
-          <div className="w-full aspect-video bg-black rounded-xl overflow-hidden">
-            <video
-              className="w-full h-full"
-              src={video.videoUrl}
-              poster={video.thumbnailUrl}
-              controls
-              autoPlay
-              controlsList="nodownload"
-              preload="auto"
-            />
-          </div>
-
-          {/* Title */}
-          <div className="mt-4">
-            <h1 className="text-headline-md font-headline-md text-on-surface leading-snug">
-              {video.title}
-            </h1>
-          </div>
-
-          {/* Channel row + Action buttons */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-4">
-
-            {/* Channel info + Subscribe */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <button
-                onClick={() => navigate(`/channel/${video.channelId}`)}
-                className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white font-semibold flex-shrink-0 hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: video.channelAvatarBg || '#4d96ff' }}
-              >
-                {video.channelProfileUrl ? (
-                  <img src={video.channelProfileUrl} alt={video.channelName} className="w-full h-full object-cover" />
-                ) : (
-                  video.channelInitial
-                )}
-              </button>
-
-              <button
-                onClick={() => navigate(`/channel/${video.channelId}`)}
-                className="text-left"
-              >
-                <div className="text-title-sm font-title-sm text-on-surface flex items-center gap-1">
-                  {video.channelName}
-                  <span className="material-symbols-outlined text-[14px] text-secondary">check_circle</span>
-                </div>
-                <div className="text-body-sm text-secondary">
-                  {formatLikes(Math.floor((video.views || 1000) * 0.008))} subscribers
-                </div>
-              </button>
-
-              <button
-                onClick={() => setSubscribed(p => !p)}
-                className={`
-                  px-5 py-2 rounded-full text-label-md font-label-md transition-all duration-200 ml-1
-                  ${subscribed
-                    ? 'bg-surface-container border border-surface-variant text-on-surface hover:bg-surface-container-high'
-                    : 'bg-on-surface text-surface-container-lowest hover:opacity-85'
-                  }
-                `}
-              >
-                {subscribed ? 'Subscribed' : 'Subscribe'}
-              </button>
-            </div>
-
-            {/* Action pill buttons */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0 flex-shrink-0">
-
-              {/* Like / Dislike combined pill */}
-              <div className="flex items-center bg-surface-container-low rounded-full h-9 border border-surface-variant flex-shrink-0">
-                <button
-                  onClick={handleLike}
-                  className="flex items-center gap-2 px-4 h-full hover:bg-surface-variant rounded-l-full transition-colors border-r border-surface-variant"
-                >
-                  <span
-                    className="material-symbols-outlined text-[20px]"
-                    style={liked ? { fontVariationSettings: '"FILL" 1', color: '#bc0100' } : {}}
-                  >
-                    thumb_up
-                  </span>
-                  <span className="text-label-md font-label-md text-on-surface">
-                    {formatLikes(likeCount)}
-                  </span>
-                </button>
-                <button
-                  onClick={handleDislike}
-                  className="flex items-center px-4 h-full hover:bg-surface-variant rounded-r-full transition-colors"
-                >
-                  <span
-                    className="material-symbols-outlined text-[20px]"
-                    style={disliked ? { fontVariationSettings: '"FILL" 1', color: '#bc0100' } : {}}
-                  >
-                    thumb_down
-                  </span>
-                </button>
+              {/* Player */}
+              <div className="w-full aspect-video bg-black rounded-xl overflow-hidden">
+                <video
+                  className="w-full h-full"
+                  src={video.videoUrl}
+                  poster={video.thumbnailUrl}
+                  controls
+                  autoPlay
+                  controlsList="nodownload"
+                  preload="auto"
+                />
               </div>
 
-              {/* Share */}
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 px-4 h-9 bg-surface-container-low hover:bg-surface-variant rounded-full transition-colors border border-surface-variant whitespace-nowrap flex-shrink-0"
-              >
-                <span className="material-symbols-outlined text-[20px]">
-                  {shareCopied ? 'check' : 'share'}
-                </span>
-                <span className="text-label-md font-label-md">
-                  {shareCopied ? 'Copied!' : 'Share'}
-                </span>
-              </button>
+              {/* Title */}
+              <h1 className="mt-4 text-headline-md font-headline-md text-on-surface leading-snug">
+                {video.title}
+              </h1>
 
-              {/* Download (desktop) */}
-              <button className="hidden md:flex items-center gap-2 px-4 h-9 bg-surface-container-low hover:bg-surface-variant rounded-full transition-colors border border-surface-variant whitespace-nowrap flex-shrink-0">
-                <span className="material-symbols-outlined text-[20px]">download</span>
-                <span className="text-label-md font-label-md">Download</span>
-              </button>
+              {/* Channel row + actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4 gap-4">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button
+                    onClick={() => navigate(`/channel/${video.channelId}`)}
+                    className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white font-semibold flex-shrink-0 hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: video.channelAvatarBg || '#4d96ff' }}
+                  >
+                    {video.channelProfileUrl ? (
+                      <img src={video.channelProfileUrl} alt={video.channelName} className="w-full h-full object-cover" />
+                    ) : (
+                      video.channelInitial
+                    )}
+                  </button>
 
-              {/* More */}
-              <button className="flex items-center px-3 h-9 bg-surface-container-low hover:bg-surface-variant rounded-full transition-colors border border-surface-variant flex-shrink-0">
-                <span className="material-symbols-outlined text-[20px]">more_horiz</span>
-              </button>
+                  <button onClick={() => navigate(`/channel/${video.channelId}`)} className="text-left">
+                    <div className="text-title-sm font-title-sm text-on-surface flex items-center gap-1">
+                      {video.channelName}
+                      <span className="material-symbols-outlined text-[14px] text-secondary">check_circle</span>
+                    </div>
+                    <div className="text-body-sm text-secondary">
+                      {formatCount(Math.floor((video.views || 1000) * 0.008))} subscribers
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setSubscribed(p => !p)}
+                    className={`px-5 py-2 rounded-full text-label-md font-label-md transition-all duration-200 ml-1 ${subscribed ? 'bg-surface-container border border-surface-variant text-on-surface hover:bg-surface-container-high' : 'bg-on-surface text-surface-container-lowest hover:opacity-85'}`}
+                  >
+                    {subscribed ? 'Subscribed' : 'Subscribe'}
+                  </button>
+                </div>
+
+                <VideoActions
+                  liked={liked}
+                  disliked={disliked}
+                  likeCount={likeCount}
+                  shareCopied={shareCopied}
+                  onLike={handleLike}
+                  onDislike={handleDislike}
+                  onShare={handleShare}
+                />
+              </div>
+
+              <VideoDescription video={video} />
+              <CommentSection videoId={video._id} />
             </div>
+
+            {/* ── Right: Recommendations ── */}
+            <aside className="w-full lg:w-[400px] flex-shrink-0">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setRecFilter(cat)}
+                    className={`px-3 py-1.5 rounded-lg text-label-md font-label-md whitespace-nowrap flex-shrink-0 transition-colors ${recFilter === cat ? 'bg-on-surface text-surface-container-lowest' : 'bg-surface-container-low border border-surface-variant text-on-surface hover:bg-surface-variant'}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="flex flex-col gap-3">
+                {(filteredRecs.length > 0 ? filteredRecs : recommendations).map(v => (
+                  <RecommendedVideoCard key={v._id} video={v} />
+                ))}
+              </div>
+            </aside>
+
           </div>
-
-          {/* Description box */}
-          <div
-            className="mt-4 p-4 bg-surface-container-low rounded-xl border border-surface-variant hover:bg-surface-variant/50 transition-colors cursor-pointer"
-            onClick={() => setDescExpanded(p => !p)}
-          >
-            <div className="flex gap-2 text-title-sm font-title-sm text-on-surface mb-2 flex-wrap">
-              <span>{formatViews(video.views)}</span>
-              <span>•</span>
-              <span>{formatDate(video.uploadDate)}</span>
-              <span className="ml-2 text-body-md text-secondary text-label-md font-label-md bg-surface-container px-2 py-0.5 rounded-full">
-                {video.category}
-              </span>
-            </div>
-
-            <p className={`text-body-md text-on-surface whitespace-pre-wrap ${!descExpanded ? 'line-clamp-3' : ''}`}>
-              {video.description}
-              {descExpanded && (
-                <>
-                  {'\n\n'}
-                  <span className="text-secondary">
-                    Watch more videos on our channel and don't forget to like and subscribe!
-                    Hit the notification bell so you never miss an upload.{'\n\n'}
-                    Tags: #{video.category.replace(/\s+/g, '')} #programming #tutorial #youtube
-                  </span>
-                </>
-              )}
-            </p>
-
-            <div className="mt-2 text-label-md font-label-md text-on-surface font-semibold">
-              {descExpanded ? 'Show less' : 'Show more'}
-            </div>
-          </div>
-
-          {/* Comments */}
-          <CommentSection videoId={video._id} />
-        </div>
-
-        {/* ══════ RIGHT: Recommendations ══════ */}
-        <aside className="w-full lg:w-[400px] flex-shrink-0">
-
-          {/* Filter chips */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setRecFilter(cat)}
-                className={`
-                  px-3 py-1.5 rounded-lg text-label-md font-label-md whitespace-nowrap flex-shrink-0 transition-colors
-                  ${recFilter === cat
-                    ? 'bg-on-surface text-surface-container-lowest'
-                    : 'bg-surface-container-low border border-surface-variant text-on-surface hover:bg-surface-variant'
-                  }
-                `}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Recommended video list */}
-          <div className="flex flex-col gap-3">
-            {(filteredRecs.length > 0 ? filteredRecs : recommendations).map(v => (
-              <RecommendedVideoCard key={v._id} video={v} />
-            ))}
-          </div>
-        </aside>
-      </div>
-      </main>
+        </main>
       </div>
 
-      {/* ── Mobile Bottom Nav ── */}
       <BottomNav />
     </div>
   );

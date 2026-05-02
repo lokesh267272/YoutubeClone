@@ -16,17 +16,22 @@ function validate(fields) {
   return errors;
 }
 
-function InputField({ id, label, type = 'text', value, onChange, error, placeholder, autoComplete }) {
+function InputField({ id, label, type = 'text', icon, value, onChange, error, placeholder, autoComplete }) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === 'password';
   const inputType = isPassword && showPassword ? 'text' : type;
 
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-body-md font-medium text-on-surface">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-semibold text-on-surface">
         {label}
       </label>
       <div className="relative">
+        {icon && (
+          <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-secondary pointer-events-none">
+            {icon}
+          </span>
+        )}
         <input
           id={id}
           type={inputType}
@@ -35,21 +40,22 @@ function InputField({ id, label, type = 'text', value, onChange, error, placehol
           placeholder={placeholder}
           autoComplete={autoComplete}
           className={`
-            w-full h-11 px-4 rounded-lg text-body-md text-on-surface bg-surface-container
-            border transition-all duration-150 outline-none
-            placeholder:text-secondary
+            w-full h-12 rounded-xl text-sm text-on-surface bg-surface-container
+            border-2 transition-all duration-150 outline-none
+            placeholder:text-secondary/60
+            ${icon ? 'pl-10 pr-4' : 'px-4'}
+            ${isPassword ? '!pr-11' : ''}
             ${error
-              ? 'border-error focus:border-error focus:ring-2 focus:ring-error/20'
-              : 'border-surface-variant focus:border-secondary focus:ring-2 focus:ring-secondary/10'
+              ? 'border-error focus:border-error focus:bg-error/5'
+              : 'border-surface-variant focus:border-[#FF0000] focus:bg-surface-container-lowest'
             }
-            ${isPassword ? 'pr-11' : ''}
           `}
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword(p => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-on-surface transition-colors"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary hover:text-on-surface transition-colors"
             tabIndex={-1}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
@@ -60,8 +66,8 @@ function InputField({ id, label, type = 'text', value, onChange, error, placehol
         )}
       </div>
       {error && (
-        <p className="text-body-sm text-error flex items-center gap-1">
-          <span className="material-symbols-outlined text-[14px]">error</span>
+        <p className="text-xs text-error flex items-center gap-1">
+          <span className="material-symbols-outlined text-[13px]">error</span>
           {error}
         </p>
       )}
@@ -83,7 +89,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [justRegistered] = useState(!!location.state?.registeredEmail);
 
-  // Already logged in — bounce to home
   useEffect(() => {
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
@@ -99,14 +104,10 @@ export default function LoginPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     const validationErrors = validate(fields);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
+    if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
 
     setLoading(true);
     setGlobalError('');
-
     try {
       const { data } = await api.post('/auth/login', {
         email: fields.email.trim(),
@@ -115,8 +116,7 @@ export default function LoginPage() {
       login(data.token, data.user);
       navigate('/', { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
-      setGlobalError(msg);
+      setGlobalError(err.response?.data?.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -129,42 +129,34 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-container-low flex items-center justify-center p-gutter">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-surface-container-low flex items-center justify-center p-4">
+      <div className="w-full max-w-[420px]">
 
         {/* Card */}
-        <div className="bg-surface-container-lowest border border-surface-variant rounded-xl p-8 md:p-10 shadow-sm">
+        <div className="bg-surface-container-lowest border border-surface-variant rounded-2xl p-8 shadow-lg">
 
-          {/* Logo */}
+          {/* Logo + heading */}
           <div className="flex flex-col items-center mb-8">
-            <a href="/" className="flex items-center gap-1.5 mb-6">
-              <span
-                className="material-symbols-outlined text-primary text-[36px]"
-                style={{ fontVariationSettings: '"FILL" 1' }}
-              >
-                play_circle
-              </span>
-              <span className="text-display-lg font-display-lg text-on-surface tracking-tight">
-                YouTube
-              </span>
+            <a href="/" onClick={e => { e.preventDefault(); navigate('/'); }} className="mb-5">
+              <img src="/YouTube_Logo_2017.svg.png" alt="YouTube" className="h-8 w-auto" />
             </a>
-            <h1 className="text-headline-md font-headline-md text-on-surface">Sign in</h1>
-            <p className="text-body-md text-secondary mt-1">to continue to YouTube</p>
+            <h1 className="text-2xl font-bold text-on-surface tracking-tight">Sign in</h1>
+            <p className="text-sm text-secondary mt-1">Welcome back! Enter your details below.</p>
           </div>
 
-          {/* "Just registered" success banner */}
+          {/* Success banner */}
           {justRegistered && (
-            <div className="flex items-center gap-2 px-4 py-3 bg-surface-container rounded-lg text-body-md text-on-surface mb-5 border border-surface-variant">
+            <div className="flex items-center gap-2 px-4 py-3 bg-[#6bcb77]/10 border border-[#6bcb77]/30 rounded-xl text-sm text-on-surface mb-5">
               <span className="material-symbols-outlined text-[#6bcb77] text-[18px]">check_circle</span>
               Account created! Sign in below.
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
 
             {/* Global error */}
             {globalError && (
-              <div className="flex items-start gap-2 px-4 py-3 bg-error-container rounded-lg text-body-md text-on-error-container">
+              <div className="flex items-start gap-2 px-4 py-3 bg-error/10 border border-error/30 rounded-xl text-sm text-error">
                 <span className="material-symbols-outlined text-[18px] mt-0.5 flex-shrink-0">warning</span>
                 <span>{globalError}</span>
               </div>
@@ -174,6 +166,7 @@ export default function LoginPage() {
               id="email"
               label="Email address"
               type="email"
+              icon="mail"
               value={fields.email}
               onChange={handleChange('email')}
               error={errors.email}
@@ -181,89 +174,65 @@ export default function LoginPage() {
               autoComplete="email"
             />
 
-            <div className="flex flex-col gap-1">
-              <InputField
-                id="password"
-                label="Password"
-                type="password"
-                value={fields.password}
-                onChange={handleChange('password')}
-                error={errors.password}
-                placeholder="Your password"
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                className="self-end text-body-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </button>
-            </div>
+            <InputField
+              id="password"
+              label="Password"
+              type="password"
+              icon="lock"
+              value={fields.password}
+              onChange={handleChange('password')}
+              error={errors.password}
+              placeholder="Your password"
+              autoComplete="current-password"
+            />
 
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="
-                w-full h-11 mt-1 rounded-full bg-on-surface text-surface-container-lowest
-                text-body-md font-semibold tracking-wide
-                hover:opacity-90 active:scale-[0.98] transition-all duration-150
-                disabled:opacity-50 disabled:cursor-not-allowed
-                flex items-center justify-center gap-2
-              "
+              className="w-full h-12 mt-1 rounded-xl bg-[#FF0000] hover:bg-[#cc0000] text-white text-sm font-bold tracking-wide transition-all duration-150 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
             >
               {loading ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-surface-container-lowest/40 border-t-surface-container-lowest rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                   Signing in…
                 </>
-              ) : (
-                'Sign in'
-              )}
+              ) : 'Sign in'}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
+          <div className="flex items-center gap-3 my-5">
             <hr className="flex-1 border-surface-variant" />
-            <span className="text-body-sm text-secondary">or</span>
+            <span className="text-xs text-secondary font-medium">OR</span>
             <hr className="flex-1 border-surface-variant" />
           </div>
 
-          {/* Demo credentials shortcut */}
+          {/* Demo account */}
           <button
             onClick={fillDemo}
-            className="
-              w-full h-11 rounded-full border border-surface-variant bg-surface-container-lowest
-              text-body-md text-on-surface font-medium
-              hover:bg-surface-container transition-colors
-              flex items-center justify-center gap-2
-            "
+            className="w-full h-12 rounded-xl border-2 border-surface-variant bg-surface-container-lowest text-sm text-on-surface font-semibold hover:bg-surface-container hover:border-on-surface/20 transition-all flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px] text-secondary">
-              bolt
-            </span>
+            <span className="material-symbols-outlined text-[18px] text-secondary">bolt</span>
             Use demo account
           </button>
 
-          {/* Hint below demo button */}
-          <p className="text-center text-body-sm text-secondary mt-3">
-            <span className="font-medium text-on-surface">test@example.com</span>
-            {' '}·{' '}
-            <span className="font-medium text-on-surface">password123</span>
+          <p className="text-center text-xs text-secondary mt-2.5">
+            <span className="font-semibold text-on-surface">test@example.com</span>
+            {' · '}
+            <span className="font-semibold text-on-surface">password123</span>
           </p>
 
           {/* Sign up link */}
-          <p className="text-center text-body-md text-secondary mt-6">
+          <p className="text-center text-sm text-secondary mt-6 pt-5 border-t border-surface-variant">
             Don&apos;t have an account?{' '}
-            <Link to="/register" className="text-primary font-medium hover:underline">
+            <Link to="/register" className="text-[#FF0000] font-semibold hover:underline">
               Create account
             </Link>
           </p>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-body-sm text-secondary mt-4">
+        <p className="text-center text-xs text-secondary mt-4">
           © 2026 YouTube Clone · Built with MERN Stack
         </p>
       </div>
